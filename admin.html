@@ -10,39 +10,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .app{width:100%;max-width:430px;background:#fff;min-height:100vh;display:flex;flex-direction:column}
 .tp-header{padding:20px 16px 14px;border-bottom:1px solid #000;background:#000;display:flex;align-items:center;justify-content:space-between}
 .tp-logo{font-size:17px;font-weight:700;letter-spacing:0.08em;color:#fff}
-.tp-sub{font-size:11px;color:#888;margin-top:2px;letter-spacing:0.04em}
+.tp-sub{font-size:11px;color:#888;margin-top:2px}
 .badge-admin{font-size:10px;background:#fff;color:#000;padding:3px 10px;letter-spacing:0.06em;font-weight:700}
 .login-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px}
 .login-box{width:100%}
-.login-box h2{font-size:18px;font-weight:700;margin-bottom:24px;color:#000;letter-spacing:0.04em}
+.login-box h2{font-size:18px;font-weight:700;margin-bottom:24px;color:#000}
 .field{margin-bottom:14px}
 .field label{font-size:11px;color:#555;display:block;margin-bottom:5px;letter-spacing:0.06em;text-transform:uppercase;font-weight:700}
 .field input,.field select{width:100%;padding:11px 13px;font-size:14px;border:1px solid #000;background:#fff;color:#000;border-radius:0;font-family:inherit;outline:none;-webkit-appearance:none}
 .field input:focus,.field select:focus{outline:2px solid #000;outline-offset:1px}
 .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-.btn{width:100%;padding:13px;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:0.04em;border-radius:0;font-weight:700}
+.btn{width:100%;padding:13px;font-size:14px;cursor:pointer;font-family:inherit;border-radius:0;font-weight:700}
 .btn-primary{background:#000;color:#fff;border:1px solid #000}
 .btn-ghost{background:#fff;border:1px solid #000;color:#000}
 .btn-danger{background:#fff;border:1px solid #e00;color:#e00;font-size:13px;padding:8px 12px;cursor:pointer;font-family:inherit;border-radius:0;font-weight:600}
 .msg-err{background:#fff;border:1px solid #000;color:#000;font-size:12px;padding:10px 14px;margin-bottom:14px}
-.msg-ok{background:#000;color:#fff;font-size:12px;padding:10px 14px;margin-bottom:14px;letter-spacing:0.04em}
+.msg-ok{background:#000;color:#fff;font-size:12px;padding:10px 14px;margin-bottom:14px}
 .panel{display:none;flex:1;flex-direction:column}
 .panel.show{display:flex}
 .tab-bar{display:flex;border-bottom:1px solid #000;background:#fff}
-.tab{flex:1;padding:11px 4px;font-size:12px;text-align:center;cursor:pointer;background:#fff;border:none;color:#888;font-family:inherit;letter-spacing:0.04em;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:600}
+.tab{flex:1;padding:11px 4px;font-size:12px;text-align:center;cursor:pointer;background:#fff;border:none;color:#888;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:600}
 .tab.active{color:#000;font-weight:800;border-bottom-color:#000}
 .pane{display:none;padding:16px;overflow-y:auto;flex:1}
 .pane.show{display:block}
 .morph-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:4px}
-.morph-chip{padding:9px 6px;font-size:12px;border:1px solid #ccc;cursor:pointer;text-align:center;color:#555;background:#fff;user-select:none;white-space:nowrap;word-break:keep-all;transition:all 0.1s}
+.morph-chip{padding:9px 6px;font-size:12px;border:1px solid #ccc;cursor:pointer;text-align:center;color:#555;background:#fff;user-select:none;white-space:nowrap;transition:all 0.1s}
 .morph-chip.selected{background:#000;color:#fff;border-color:#000}
-/* 사진 업로드 2장 */
 .upload-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
 .upload-box{border:1px dashed #999;padding:14px 8px;text-align:center;font-size:12px;color:#888;cursor:pointer;position:relative;background:#fff;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
 .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .upload-preview{width:100%;height:70px;object-fit:cover;display:block;margin-bottom:4px}
-.upload-label{font-size:10px;color:#bbb;margin-top:2px}
-/* LIST */
+.upload-label{font-size:10px;color:#bbb}
 .list-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #eee;gap:8px}
 .list-item-thumb{width:44px;height:44px;flex-shrink:0;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:20px}
 .list-item-thumb img{width:100%;height:100%;object-fit:cover}
@@ -54,9 +52,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .acct-row-info{flex:1}
 .acct-row-info p{font-size:13px;color:#000;font-weight:600}
 .acct-row-info span{font-size:11px;color:#888}
-.section-title{font-size:11px;font-weight:700;letter-spacing:0.08em;color:#888;text-transform:uppercase;margin-bottom:10px}
 .logout-row{padding:16px;border-top:1px solid #eee;background:#fff}
-.uploading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;color:#fff;font-size:15px;letter-spacing:0.06em}
+.uploading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
+.uploading-overlay p{color:#fff;font-size:15px;letter-spacing:0.06em}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -126,17 +126,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="upload-row">
           <div class="upload-box">
             <input type="file" accept="image/*" onchange="handleImg(event,0)">
-            <div id="uploadPh0">
-              <div style="font-size:22px">📷</div>
-              <div class="upload-label">사진 1</div>
-            </div>
+            <div id="uploadPh0"><div style="font-size:22px">📷</div><div class="upload-label">사진 1</div></div>
           </div>
           <div class="upload-box">
             <input type="file" accept="image/*" onchange="handleImg(event,1)">
-            <div id="uploadPh1">
-              <div style="font-size:22px">📷</div>
-              <div class="upload-label">사진 2</div>
-            </div>
+            <div id="uploadPh1"><div style="font-size:22px">📷</div><div class="upload-label">사진 2</div></div>
           </div>
         </div>
       </div>
@@ -163,7 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const SUPABASE_URL = 'https://yoiytrwuojrgvjwsywlt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
-const STORAGE_URL = SUPABASE_URL + '/storage/v1/object/public/animal-images/';
+const STORAGE_URL  = SUPABASE_URL + '/storage/v1/object/public/animal-images/';
 const STORAGE_UPLOAD = SUPABASE_URL + '/storage/v1/object/animal-images/';
 
 const MORPHS = ['세이블','릴리','세이블릴리','노말','아잔틱','초초','카푸치노','SPT','프라푸치노','크림','세이블아잔틱','릴리아잔틱','세이블릴리아잔틱','100헷아잔틱','릴리100헷아잔틱'];
@@ -181,7 +175,6 @@ const CREDS = {
 };
 
 let currentUser = null;
-let pendingImgs = [null, null];
 let pendingFiles = [null, null];
 let selectedMorph = null;
 let animals = [];
@@ -199,7 +192,12 @@ async function api(path, opts = {}) {
 async function uploadImage(file, filename) {
   const res = await fetch(STORAGE_UPLOAD + filename, {
     method: 'POST',
-    headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': file.type, 'x-upsert': 'true'},
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
     body: file
   });
   if (!res.ok) throw new Error(await res.text());
@@ -210,34 +208,34 @@ function doLogin() {
   const uid = document.getElementById('loginBreeder').value;
   const pw = document.getElementById('loginPw').value;
   const errEl = document.getElementById('loginErr');
-  if (!uid) { errEl.textContent = '브리더를 선택해주세요'; errEl.style.display = 'block'; return; }
-  if (!pw) { errEl.textContent = '비밀번호를 입력해주세요'; errEl.style.display = 'block'; return; }
+  if (!uid) { errEl.textContent='브리더를 선택해주세요'; errEl.style.display='block'; return; }
+  if (!pw)  { errEl.textContent='비밀번호를 입력해주세요'; errEl.style.display='block'; return; }
   if (CREDS[uid] !== hash(pw)) {
-    errEl.textContent = '비밀번호가 올바르지 않습니다';
-    errEl.style.display = 'block';
-    document.getElementById('loginPw').value = '';
+    errEl.textContent='비밀번호가 올바르지 않습니다';
+    errEl.style.display='block';
+    document.getElementById('loginPw').value='';
     return;
   }
   currentUser = uid;
-  errEl.style.display = 'none';
-  document.getElementById('loginPw').value = '';
-  document.getElementById('loginWrap').style.display = 'none';
+  errEl.style.display='none';
+  document.getElementById('loginPw').value='';
+  document.getElementById('loginWrap').style.display='none';
   document.getElementById('panel').classList.add('show');
-  document.getElementById('headerBadge').style.display = 'block';
-  document.getElementById('headerLabel').textContent = BREEDERS[uid];
-  if (uid !== MASTER_ID) document.getElementById('tab-acct-btn').style.display = 'none';
+  document.getElementById('headerBadge').style.display='block';
+  document.getElementById('headerLabel').textContent=BREEDERS[uid];
+  if (uid !== MASTER_ID) document.getElementById('tab-acct-btn').style.display='none';
   buildMorphGrid();
   switchTab('reg');
 }
 
 function doLogout() {
-  currentUser = null; pendingImgs = [null,null]; pendingFiles = [null,null]; selectedMorph = null;
-  document.getElementById('loginWrap').style.display = 'flex';
+  currentUser=null; pendingFiles=[null,null]; selectedMorph=null;
+  document.getElementById('loginWrap').style.display='flex';
   document.getElementById('panel').classList.remove('show');
-  document.getElementById('headerBadge').style.display = 'none';
-  document.getElementById('loginBreeder').value = '';
-  document.getElementById('loginErr').style.display = 'none';
-  document.getElementById('tab-acct-btn').style.display = '';
+  document.getElementById('headerBadge').style.display='none';
+  document.getElementById('loginBreeder').value='';
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('tab-acct-btn').style.display='';
 }
 
 function buildMorphGrid() {
@@ -248,22 +246,34 @@ function buildMorphGrid() {
 
 function pickMorph(name, el) {
   document.querySelectorAll('.morph-chip').forEach(c => c.classList.remove('selected'));
-  if (selectedMorph === name) { selectedMorph = null; return; }
-  selectedMorph = name; el.classList.add('selected');
+  if (selectedMorph === name) { selectedMorph=null; return; }
+  selectedMorph=name; el.classList.add('selected');
 }
 
 function handleImg(e, idx) {
   const file = e.target.files[0];
   if (!file) return;
-  if (file.size > 10 * 1024 * 1024) { alert('10MB 이하 이미지만 가능합니다'); return; }
+  if (file.size > 10*1024*1024) { alert('10MB 이하 이미지만 가능합니다'); return; }
   pendingFiles[idx] = file;
   const reader = new FileReader();
   reader.onload = ev => {
-    pendingImgs[idx] = ev.target.result;
     document.getElementById(`uploadPh${idx}`).innerHTML =
       `<img src="${ev.target.result}" class="upload-preview" alt="미리보기"><div class="upload-label">사진 ${idx+1}</div>`;
   };
   reader.readAsDataURL(file);
+}
+
+function showUploading(show) {
+  const existing = document.getElementById('uploadingOverlay');
+  if (show && !existing) {
+    const el = document.createElement('div');
+    el.id = 'uploadingOverlay';
+    el.className = 'uploading-overlay';
+    el.innerHTML = '<div class="spinner"></div><p>등록 중...</p>';
+    document.body.appendChild(el);
+  } else if (!show && existing) {
+    document.body.removeChild(existing);
+  }
 }
 
 async function saveAnimal() {
@@ -271,55 +281,57 @@ async function saveAnimal() {
   const gender = document.getElementById('aGender').value;
   const okEl = document.getElementById('saveOk');
   const errEl = document.getElementById('saveErr');
-  okEl.style.display = 'none'; errEl.style.display = 'none';
-  if (!name) { errEl.textContent = '개체 이름을 입력해주세요'; errEl.style.display = 'block'; return; }
+  okEl.style.display='none'; errEl.style.display='none';
+  if (!name) { errEl.textContent='개체 이름을 입력해주세요'; errEl.style.display='block'; return; }
 
-  const overlay = document.createElement('div');
-  overlay.className = 'uploading-overlay';
-  overlay.textContent = '업로드 중...';
-  document.body.appendChild(overlay);
-
+  showUploading(true);
   try {
-    let url1 = null, url2 = null;
+    let url1=null, url2=null;
     const ts = Date.now();
-    if (pendingFiles[0]) url1 = await uploadImage(pendingFiles[0], `${currentUser}_${ts}_1.${pendingFiles[0].name.split('.').pop()}`);
-    if (pendingFiles[1]) url2 = await uploadImage(pendingFiles[1], `${currentUser}_${ts}_2.${pendingFiles[1].name.split('.').pop()}`);
+    const ext0 = pendingFiles[0] ? pendingFiles[0].name.split('.').pop() : 'jpg';
+    const ext1 = pendingFiles[1] ? pendingFiles[1].name.split('.').pop() : 'jpg';
+    if (pendingFiles[0]) url1 = await uploadImage(pendingFiles[0], `${currentUser}_${ts}_1.${ext0}`);
+    if (pendingFiles[1]) url2 = await uploadImage(pendingFiles[1], `${currentUser}_${ts}_2.${ext1}`);
 
     await api('animals', {
       method: 'POST',
       body: JSON.stringify({
-        name, gender: gender || null, morph: selectedMorph || null,
-        image_url: url1, image_url_2: url2,
-        owner_id: currentUser, owner_label: BREEDERS[currentUser]
+        name,
+        gender: gender || null,
+        morph: selectedMorph || null,
+        image_url: url1,
+        image_url_2: url2,
+        owner_id: currentUser,
+        owner_label: BREEDERS[currentUser]
       })
     });
 
-    okEl.style.display = 'block';
-    document.getElementById('aName').value = '';
-    document.getElementById('aGender').value = '';
+    okEl.style.display='block';
+    document.getElementById('aName').value='';
+    document.getElementById('aGender').value='';
     document.querySelectorAll('.morph-chip').forEach(c => c.classList.remove('selected'));
-    selectedMorph = null; pendingImgs = [null,null]; pendingFiles = [null,null];
+    selectedMorph=null; pendingFiles=[null,null];
     ['uploadPh0','uploadPh1'].forEach((id,i) => {
-      document.getElementById(id).innerHTML = `<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;
+      document.getElementById(id).innerHTML=`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;
     });
-    setTimeout(() => okEl.style.display = 'none', 2500);
+    setTimeout(() => okEl.style.display='none', 2500);
   } catch(e) {
-    errEl.textContent = '등록 실패: ' + e.message;
-    errEl.style.display = 'block';
+    errEl.textContent='등록 실패: ' + e.message;
+    errEl.style.display='block';
   } finally {
-    document.body.removeChild(overlay);
+    showUploading(false);
   }
 }
 
 async function renderAdminList() {
   const el = document.getElementById('adminList');
-  el.innerHTML = '<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
+  el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
   const filter = currentUser === MASTER_ID
     ? 'animals?select=*&order=created_at.desc'
     : `animals?select=*&owner_id=eq.${currentUser}&order=created_at.desc`;
   try {
     animals = await api(filter);
-    if (!animals.length) { el.innerHTML = '<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 개체가 없습니다</p>'; return; }
+    if (!animals.length) { el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 개체가 없습니다</p>'; return; }
     el.innerHTML = animals.map(a => {
       const thumb = a.image_url ? `<img src="${a.image_url}" alt="${a.name}">` : `<span style="font-size:20px">🦎</span>`;
       return `<div class="list-item">
@@ -332,22 +344,22 @@ async function renderAdminList() {
       </div>`;
     }).join('');
   } catch(e) {
-    el.innerHTML = `<p style="font-size:13px;color:#e00;padding:12px 0">오류: ${e.message}</p>`;
+    el.innerHTML=`<p style="font-size:13px;color:#e00;padding:12px 0">오류: ${e.message}</p>`;
   }
 }
 
 async function deleteAnimal(id, name) {
   if (!confirm(`"${name}" 개체를 삭제하시겠습니까?`)) return;
   try {
-    await api(`animals?id=eq.${id}`, { method: 'DELETE' });
+    await api(`animals?id=eq.${id}`, { method:'DELETE' });
     renderAdminList();
-  } catch(e) { alert('삭제 실패: ' + e.message); }
+  } catch(e) { alert('삭제 실패: '+e.message); }
 }
 
 function renderAcctPanel() {
   const el = document.getElementById('acctPanel');
-  if (currentUser !== MASTER_ID) { el.innerHTML = '<p style="font-size:13px;color:#888;padding:10px 0">마이크레소프트 계정만 접근 가능합니다.</p>'; return; }
-  el.innerHTML = `<div class="section-title" style="margin-bottom:14px">비밀번호 변경</div>` +
+  if (currentUser !== MASTER_ID) { el.innerHTML='<p style="font-size:13px;color:#888;padding:10px 0">마이크레소프트 계정만 접근 가능합니다.</p>'; return; }
+  el.innerHTML = `<p style="font-size:12px;color:#888;margin-bottom:14px">각 브리더 계정의 비밀번호를 변경합니다.</p>` +
     Object.entries(BREEDERS).map(([uid,label]) => `
       <div class="acct-row">
         <div class="acct-row-info"><p>${label}</p><span>${uid}</span></div>
@@ -358,22 +370,22 @@ function renderAcctPanel() {
 
 function changePw(uid) {
   const np = prompt(`${BREEDERS[uid]}\n새 비밀번호 (4자 이상):`);
-  if (np === null) return;
-  if (np.length < 4) { alert('4자 이상 입력하세요'); return; }
+  if (np===null) return;
+  if (np.length<4) { alert('4자 이상 입력하세요'); return; }
   CREDS[uid] = hash(np);
   const ok = document.getElementById('acctOk');
-  ok.textContent = `✓ ${BREEDERS[uid]} 비밀번호 변경됨 (이 세션 한정)`;
-  ok.style.display = 'block';
-  setTimeout(() => ok.style.display = 'none', 3000);
+  ok.textContent=`✓ ${BREEDERS[uid]} 비밀번호 변경됨 (이 세션 한정)`;
+  ok.style.display='block';
+  setTimeout(()=>ok.style.display='none',3000);
 }
 
 function switchTab(tab) {
   ['reg','list','acct'].forEach(t => {
-    document.getElementById(`pane-${t}`).classList.toggle('show', t === tab);
-    document.getElementById(`tab-${t}-btn`).classList.toggle('active', t === tab);
+    document.getElementById(`pane-${t}`).classList.toggle('show', t===tab);
+    document.getElementById(`tab-${t}-btn`).classList.toggle('active', t===tab);
   });
-  if (tab === 'list') renderAdminList();
-  if (tab === 'acct') renderAcctPanel();
+  if (tab==='list') renderAdminList();
+  if (tab==='acct') renderAcctPanel();
 }
 </script>
 </body>
