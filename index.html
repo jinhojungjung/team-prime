@@ -31,19 +31,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .badge.gender-m{background:#e8f0fe;border-color:#4a7cf7;color:#2a5cd4}
 .badge.gender-f{background:#fce8f3;border-color:#e06faa;color:#c0427e}
 .mycre-pip{font-size:14px;position:absolute;top:10px;right:12px}
+.section-label{font-size:11px;color:#888;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;padding:14px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px}
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
 .modal-bg.open{opacity:1;pointer-events:all}
 .modal-box{background:#fff;width:100%;max-width:360px;border:1.5px solid #000;overflow:hidden;transform:scale(0.95);transition:transform 0.2s;max-height:88vh;overflow-y:auto}
 .modal-bg.open .modal-box{transform:scale(1)}
 .modal-inner{padding:20px 18px 20px;background:#fff}
-.photo-slider{position:relative;width:100%;height:200px;background:#f5f5f5;overflow:hidden}
+.photo-slider{position:relative;width:100%;height:220px;background:#f5f5f5;overflow:hidden;flex-shrink:0}
 .photo-slider img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transition:opacity 0.3s}
 .photo-slider img.hidden{opacity:0;pointer-events:none}
 .photo-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
 .photo-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:background 0.2s}
 .photo-dot.active{background:#fff}
-.photo-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.35);color:#fff;border:none;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.photo-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.35);color:#fff;border:none;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .photo-nav.prev{left:6px}
 .photo-nav.next{right:6px}
 .detail-name{font-size:22px;font-weight:700;margin-top:14px;color:#000}
@@ -70,7 +71,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
   <div class="results" id="results">
-    <div class="empty"><span class="empty-icon">🔍</span>이름을 입력해서 개체를 검색하세요</div>
+    <div class="loading">불러오는 중...</div>
   </div>
 </div>
 
@@ -82,9 +83,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const SUPABASE_URL = 'https://yoiytrwuojrgvjwsywlt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
 const MASTER = '마이크레소프트';
-const STORAGE_URL = SUPABASE_URL + '/storage/v1/object/public/animal-images/';
+
+// 메인 고정 순서 (검색 없을 때)
+const PINNED_ORDER = ['링스', '루멘', '마블', '쿠키'];
 
 let animals = [];
+let _found = [];
 
 async function api(path, opts = {}) {
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
@@ -97,9 +101,48 @@ async function api(path, opts = {}) {
 }
 
 async function loadAnimals() {
-  document.getElementById('results').innerHTML = '<div class="loading">불러오는 중...</div>';
-  animals = await api('animals?select=*&order=created_at.asc');
-  doSearch();
+  try {
+    animals = await api('animals?select=*&order=created_at.asc');
+    renderMain();
+  } catch(e) {
+    document.getElementById('results').innerHTML = `<div class="empty"><span class="empty-icon">⚠️</span>불러오기 실패</div>`;
+  }
+}
+
+function sortByPinned(list) {
+  const pinned = [];
+  const rest = [];
+  PINNED_ORDER.forEach(name => {
+    const found = list.find(a => a.name === name);
+    if (found) pinned.push(found);
+  });
+  list.forEach(a => {
+    if (!PINNED_ORDER.includes(a.name)) rest.push(a);
+  });
+  return [...pinned, ...rest];
+}
+
+function renderMain() {
+  const el = document.getElementById('results');
+  if (!animals.length) {
+    el.innerHTML = '<div class="empty"><span class="empty-icon">🦎</span>등록된 개체가 없습니다</div>';
+    return;
+  }
+  const sorted = sortByPinned(animals);
+  const pinned = sorted.filter(a => PINNED_ORDER.includes(a.name));
+  const rest = sorted.filter(a => !PINNED_ORDER.includes(a.name));
+
+  let html = '';
+  if (pinned.length) {
+    html += `<div class="section-label">추천 개체</div>`;
+    html += pinned.map((a, i) => cardHtml(a, sorted.indexOf(a))).join('');
+  }
+  if (rest.length) {
+    html += `<div class="section-label" style="margin-top:8px">전체 개체</div>`;
+    html += rest.map((a) => cardHtml(a, sorted.indexOf(a))).join('');
+  }
+  _found = sorted;
+  el.innerHTML = html;
 }
 
 function genderBadge(g) {
@@ -109,36 +152,44 @@ function genderBadge(g) {
   return `<span class="badge">${g}</span>`;
 }
 
+function cardHtml(a, idx) {
+  const isMine = a.owner_label === MASTER;
+  const thumb = a.image_url ? `<img src="${a.image_url}" alt="${a.name}">` : `<span style="font-size:28px">🦎</span>`;
+  const morphBadge = a.morph ? `<span class="badge">${a.morph}</span>` : '';
+  const pip = isMine ? `<span class="mycre-pip">👑</span>` : '';
+  return `<div class="animal-card" onclick="openDetail(${idx})">
+    <div class="animal-thumb">${thumb}</div>
+    <div class="animal-info">
+      <h3>${a.name}</h3>
+      <div class="badge-row">
+        <span class="badge owner">${a.owner_label}</span>
+        ${morphBadge}
+        ${genderBadge(a.gender)}
+      </div>
+    </div>${pip}
+  </div>`;
+}
+
 function doSearch() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const el = document.getElementById('results');
-  if (!q) { el.innerHTML = '<div class="empty"><span class="empty-icon">🔍</span>이름을 입력해서 개체를 검색하세요</div>'; return; }
-  const found = animals.filter(a => a.name.toLowerCase().includes(q) || (a.morph && a.morph.toLowerCase().includes(q)));
-  if (!found.length) { el.innerHTML = '<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>'; return; }
-  window._found = found;
+  if (!q) { renderMain(); return; }
+  const found = animals.filter(a =>
+    a.name.toLowerCase().includes(q) || (a.morph && a.morph.toLowerCase().includes(q))
+  );
+  _found = found;
+  if (!found.length) {
+    el.innerHTML = '<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>';
+    return;
+  }
   el.innerHTML = `<div class="result-label">${found.length}마리 검색됨</div>` +
-    found.map((a, i) => {
-      const isMine = a.owner_label === MASTER;
-      const thumb = a.image_url ? `<img src="${a.image_url}" alt="${a.name}">` : `<span style="font-size:28px">🦎</span>`;
-      const morphBadge = a.morph ? `<span class="badge">${a.morph}</span>` : '';
-      const pip = isMine ? `<span class="mycre-pip">👑</span>` : '';
-      return `<div class="animal-card" onclick="openDetail(${i})">
-        <div class="animal-thumb">${thumb}</div>
-        <div class="animal-info">
-          <h3>${a.name}</h3>
-          <div class="badge-row">
-            <span class="badge owner">${a.owner_label}</span>
-            ${morphBadge}
-            ${genderBadge(a.gender)}
-          </div>
-        </div>${pip}
-      </div>`;
-    }).join('');
+    found.map((a, i) => cardHtml(a, i)).join('');
 }
 
 let _slideIdx = 0;
+
 function openDetail(i) {
-  const a = window._found[i];
+  const a = _found[i];
   const photos = [a.image_url, a.image_url_2].filter(Boolean);
   _slideIdx = 0;
 
@@ -146,7 +197,7 @@ function openDetail(i) {
   if (photos.length === 0) {
     heroHtml = `<div class="photo-slider" style="display:flex;align-items:center;justify-content:center;font-size:72px">🦎</div>`;
   } else if (photos.length === 1) {
-    heroHtml = `<div class="photo-slider"><img src="${photos[0]}" alt="사진1"></div>`;
+    heroHtml = `<div class="photo-slider"><img src="${photos[0]}" alt="사진"></div>`;
   } else {
     heroHtml = `<div class="photo-slider" id="slider">
       <img src="${photos[0]}" id="slide0" alt="사진1">
@@ -174,9 +225,7 @@ function openDetail(i) {
   document.getElementById('detailModal').classList.add('open');
 }
 
-function slide(dir) {
-  goSlide(_slideIdx + dir);
-}
+function slide(dir) { goSlide(_slideIdx + dir); }
 function goSlide(idx) {
   const photos = document.querySelectorAll('#slider img');
   if (!photos.length) return;
