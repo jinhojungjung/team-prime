@@ -153,12 +153,17 @@ async function loadAnimals() {
 }
 
 function buildFilters() {
-  const breeders = ['전체', ...new Set(animals.map(a => a.owner_label).filter(Boolean))];
+  // 브리더 순서 고정: 마이크레소프트 항상 첫번째
+  const BREEDER_ORDER = ['마이크레소프트','슈프림크레','모프스튜디오','게코오엑스','크레밍'];
+  const existingBreeders = new Set(animals.map(a => a.owner_label).filter(Boolean));
+  const breeders = ['전체', ...BREEDER_ORDER.filter(b => existingBreeders.has(b)),
+    ...[...existingBreeders].filter(b => !BREEDER_ORDER.includes(b))];
   const morphs = ['전체', ...new Set(animals.map(a => a.morph).filter(Boolean))];
 
-  document.getElementById('breederFilters').innerHTML = breeders.map(b =>
-    `<button class="filter-chip${b===activeBreeder?' active':''}" onclick="setBreeder('${b}')">${b}</button>`
-  ).join('');
+  document.getElementById('breederFilters').innerHTML = breeders.map(b => {
+    const label = b === '마이크레소프트' ? `👑 ${b}` : b;
+    return `<button class="filter-chip${b===activeBreeder?' active':''}" onclick="setBreeder('${b}')">${label}</button>`;
+  }).join('');
 
   document.getElementById('morphFilters').innerHTML = morphs.map(m =>
     `<button class="filter-chip${m===activeMorph?' active':''}" onclick="setMorph('${m}')">${m}</button>`
