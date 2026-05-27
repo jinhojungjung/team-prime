@@ -95,12 +95,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .close-btn{width:100%;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600;margin-top:16px;background:#fff;border:1px solid #000;color:#000}
 .sec-title{font-size:11px;color:#aaa;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;margin:14px 0 6px}
 
-/* POST DETAIL MODAL */
-.post-detail-header{padding:20px 18px 0}
-.post-detail-cat{font-size:11px;padding:2px 8px;border:1px solid #000;color:#000;font-weight:700;display:inline-block;margin-bottom:10px}
-.post-detail-title{font-size:20px;font-weight:700;color:#000;margin-bottom:8px;line-height:1.3}
-.post-detail-meta{font-size:12px;color:#aaa;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #eee}
-.post-detail-content{font-size:14px;color:#333;line-height:1.8;white-space:pre-wrap;padding:0 18px 20px}
+
 </style>
 </head>
 <body>
@@ -113,14 +108,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="visitor">방문자<br><b id="visitorNum">-</b></div>
   </div>
 
+  <!-- 공통 검색창 -->
+  <div class="search-wrap" id="globalSearchWrap">
+    <div class="search-box">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="이름, 모프, 코드, 해칭코드 검색" oninput="doGlobalSearch()" autocomplete="off" spellcheck="false">
+      <button id="searchClear" onclick="clearSearch()" style="display:none;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;padding:0 2px">✕</button>
+    </div>
+  </div>
+
+  <!-- 전체 검색 결과 -->
+  <div id="section-search" style="display:none">
+    <div class="results" id="searchResults"></div>
+  </div>
+
   <!-- 부모 개체 섹션 -->
   <div id="section-parents" style="display:block">
-    <div class="search-wrap">
-      <div class="search-box">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchInput" placeholder="이름, 모프, 코드 검색" oninput="doSearch()" autocomplete="off" spellcheck="false">
-      </div>
-    </div>
     <div class="filter-section">
       <div class="filter-label">브리더</div>
       <div class="filter-row" id="breederFilters"></div>
@@ -134,12 +137,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- 해칭 개체 섹션 -->
   <div id="section-hatchlings" style="display:none">
-    <div class="search-wrap">
-      <div class="search-box">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="hSearchInput" placeholder="코드, 모프, 부모 이름 검색" oninput="doHSearch()" autocomplete="off" spellcheck="false">
-      </div>
-    </div>
     <div class="filter-section">
       <div class="filter-label">브리더</div>
       <div class="filter-row" id="hBreederFilters"></div>
@@ -178,10 +175,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="modal-box"><div id="detailContent"></div></div>
 </div>
 
-<!-- 게시글 상세 모달 -->
-<div class="modal-bg" id="postModal" onclick="if(event.target===this)closePost()">
-  <div class="modal-box"><div id="postContent"></div></div>
-</div>
+
 
 <script>
 const SUPABASE_URL='https://yoiytrwuojrgvjwsywlt.supabase.co';
@@ -196,6 +190,7 @@ let activeBreeder='전체',activeMorph='전체',activeGender='전체';
 let hActiveBreeder='전체',hActiveMorph='전체',hActiveGender='전체';
 let currentTab='parents',slideIdx=0;
 let searchTimer=null;
+let isSearchMode=false;
 
 async function api(path){
   const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{
@@ -241,11 +236,79 @@ async function handleVisitor(){
 /* ── 탭 전환 ── */
 function switchTab(tab){
   currentTab=tab;
+  clearSearch();
   ['parents','hatchlings','guide'].forEach(t=>{
     document.getElementById(`section-${t}`).style.display=t===tab?'block':'none';
     document.getElementById(`bnav-${t}`).classList.toggle('on',t===tab);
   });
+  document.getElementById('section-search').style.display='none';
   window.scrollTo(0,0);
+}
+
+function doGlobalSearch(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>_doGlobalSearch(),200);
+}
+
+function _doGlobalSearch(){
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  const clearBtn=document.getElementById('searchClear');
+  if(!q){
+    clearBtn.style.display='none';
+    isSearchMode=false;
+    document.getElementById('section-search').style.display='none';
+    ['parents','hatchlings','guide'].forEach(t=>{
+      document.getElementById(`section-${t}`).style.display=t===currentTab?'block':'none';
+    });
+    return;
+  }
+  clearBtn.style.display='block';
+  isSearchMode=true;
+  ['parents','hatchlings','guide'].forEach(t=>{
+    document.getElementById(`section-${t}`).style.display='none';
+  });
+  document.getElementById('section-search').style.display='block';
+
+  // 부모 검색
+  const pFound=animals.filter(a=>
+    a.name.toLowerCase().includes(q)||(a.morph&&a.morph.toLowerCase().includes(q))||(a.code&&a.code.toLowerCase().includes(q))
+  );
+  // 해칭 검색
+  const hFound=hatchlings.filter(h=>{
+    const dad=animals.find(a=>a.id===h.father_id);
+    const mom=animals.find(a=>a.id===h.mother_id);
+    return h.code.toLowerCase().includes(q)||(h.morph&&h.morph.toLowerCase().includes(q))||
+      (dad&&dad.name.toLowerCase().includes(q))||(mom&&mom.name.toLowerCase().includes(q));
+  });
+
+  const el=document.getElementById('searchResults');
+  let html='';
+
+  if(!pFound.length&&!hFound.length){
+    el.innerHTML='<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>';
+    return;
+  }
+
+  if(pFound.length){
+    html+=`<div class="result-label" style="padding-top:4px">🦎 부모 개체 (${pFound.length})</div>`;
+    html+=sortByPinned(pFound).map(a=>parentCard(a)).join('');
+  }
+  if(hFound.length){
+    html+=`<div class="result-label" style="margin-top:${pFound.length?'12px':'4px'}">🥚 해칭 개체 (${hFound.length})</div>`;
+    html+=hFound.map(h=>hatchCard(h)).join('');
+  }
+  el.innerHTML=html;
+  lazyLoad(el);
+}
+
+function clearSearch(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchClear').style.display='none';
+  isSearchMode=false;
+  document.getElementById('section-search').style.display='none';
+  ['parents','hatchlings','guide'].forEach(t=>{
+    document.getElementById(`section-${t}`).style.display=t===currentTab?'block':'none';
+  });
 }
 
 /* ── 필터 ── */
@@ -346,6 +409,11 @@ function doSearch(){
   searchTimer=setTimeout(()=>renderMain(),200);
 }
 
+function doHSearch(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>renderHMain(),200);
+}
+
 function parentCard(a,i){
   const isMine=a.owner_label===MASTER;
   const thumb=a.image_url?`<img data-src="${a.image_url}" alt="${a.name}" loading="lazy">`:`<span style="font-size:28px">🦎</span>`;
@@ -407,11 +475,6 @@ function renderHMain(){
     searched.map(h=>hatchCard(h)).join('');
 }
 
-function doHSearch(){
-  clearTimeout(searchTimer);
-  searchTimer=setTimeout(()=>renderHMain(),200);
-}
-
 function hatchCard(h){
   const isMine=h.owner_label===MASTER;
   const dad=animals.find(a=>a.id===h.father_id);
@@ -469,7 +532,7 @@ function renderPosts(){
   }
   el.innerHTML=posts.map(p=>{
     const date=new Date(p.created_at).toLocaleDateString('ko-KR');
-    const preview=p.content.replace(/\n/g,' ').slice(0,80);
+    const preview=p.content.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,100);
     return `<div class="post-card" onclick="openPost('${p.id}')">
       <div class="post-meta">
         ${p.category?`<span class="post-cat">${p.category}</span>`:''}
@@ -483,20 +546,8 @@ function renderPosts(){
 }
 
 function openPost(id){
-  const p=posts.find(x=>x.id===id); if(!p) return;
-  const date=new Date(p.created_at).toLocaleDateString('ko-KR');
-  document.getElementById('postContent').innerHTML=`
-    <div class="post-detail-header">
-      ${p.category?`<div class="post-detail-cat">${p.category}</div>`:''}
-      <div class="post-detail-title">${p.title}</div>
-      <div class="post-detail-meta">${p.author_label||''} · ${date}</div>
-    </div>
-    <div class="post-detail-content">${p.content}</div>
-    <div style="padding:0 18px 20px"><button class="close-btn" onclick="closePost()">닫기</button></div>`;
-  document.getElementById('postModal').classList.add('open');
+  location.href=`/post.html?id=${id}`;
 }
-
-function closePost(){document.getElementById('postModal').classList.remove('open');}
 
 /* ── 공통 ── */
 function heroHtml(photos){
