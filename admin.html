@@ -17,10 +17,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .login-box h2{font-size:18px;font-weight:700;margin-bottom:24px;color:#000}
 .field{margin-bottom:14px}
 .field label{font-size:11px;color:#555;display:block;margin-bottom:5px;letter-spacing:0.06em;text-transform:uppercase;font-weight:700}
-.field input,.field select,.field textarea{width:100%;padding:11px 13px;font-size:14px;border:1px solid #000;background:#fff;color:#000;border-radius:0;font-family:inherit;outline:none;-webkit-appearance:none}
-.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid #000;outline-offset:1px}
-.field textarea{resize:none;height:80px}
+.field input,.field select{width:100%;padding:11px 13px;font-size:14px;border:1px solid #000;background:#fff;color:#000;border-radius:0;font-family:inherit;outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus{outline:2px solid #000;outline-offset:1px}
 .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.code-preview{font-family:monospace;font-size:14px;font-weight:700;color:#000;background:#f5f5f5;border:1px solid #ddd;padding:10px 13px;letter-spacing:0.06em;min-height:42px}
+.code-hint{font-size:11px;color:#aaa;margin-top:4px}
 .btn{width:100%;padding:13px;font-size:14px;cursor:pointer;font-family:inherit;border-radius:0;font-weight:700}
 .btn-primary{background:#000;color:#fff;border:1px solid #000}
 .btn-ghost{background:#fff;border:1px solid #000;color:#000}
@@ -30,6 +31,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .msg-ok{background:#000;color:#fff;font-size:12px;padding:10px 14px;margin-bottom:14px}
 .panel{display:none;flex:1;flex-direction:column}
 .panel.show{display:flex}
+.main-tabs{display:flex;border-bottom:2px solid #000;background:#fff}
+.main-tab{flex:1;padding:11px 4px;font-size:12px;text-align:center;cursor:pointer;background:#fff;border:none;color:#888;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:600}
+.main-tab.active{color:#000;font-weight:800;border-bottom-color:#000}
 .tab-bar{display:flex;border-bottom:1px solid #000;background:#fff}
 .tab{flex:1;padding:11px 4px;font-size:12px;text-align:center;cursor:pointer;background:#fff;border:none;color:#888;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:600}
 .tab.active{color:#000;font-weight:800;border-bottom-color:#000}
@@ -57,30 +61,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .acct-row-info span{font-size:11px;color:#888}
 .logout-row{padding:16px;border-top:1px solid #eee;background:#fff}
 .uploading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
-.uploading-overlay p{color:#fff;font-size:15px;letter-spacing:0.06em}
+.uploading-overlay p{color:#fff;font-size:15px}
 .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .edit-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity 0.2s}
 .edit-modal-bg.open{opacity:1;pointer-events:all}
 .edit-sheet{background:#fff;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;padding:20px 16px 40px;border-top:2px solid #000;transform:translateY(100%);transition:transform 0.25s ease}
 .edit-modal-bg.open .edit-sheet{transform:translateY(0)}
-.edit-sheet h3{font-size:15px;font-weight:700;margin-bottom:16px;letter-spacing:0.04em}
+.edit-sheet h3{font-size:15px;font-weight:700;margin-bottom:16px}
 .sheet-handle{width:36px;height:3px;background:#000;margin:0 auto 20px;border-radius:2px}
 .visitor-box{background:#f5f5f5;border:1px solid #eee;padding:16px;margin-bottom:16px;text-align:center}
-.visitor-box .num{font-size:36px;font-weight:800;color:#000;letter-spacing:0.04em}
+.visitor-box .num{font-size:36px;font-weight:800;color:#000}
 .visitor-box .lbl{font-size:12px;color:#888;margin-top:4px}
+.section-divider{font-size:11px;font-weight:700;letter-spacing:0.08em;color:#888;text-transform:uppercase;margin:16px 0 10px;padding-top:16px;border-top:1px solid #eee}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="tp-header">
-    <div>
-      <div class="tp-logo">🦎 TEAM.PRIME</div>
-      <div class="tp-sub">관리자 패널</div>
-    </div>
-    <div id="headerBadge" style="display:none">
-      <span class="badge-admin" id="headerLabel"></span>
-    </div>
+    <div><div class="tp-logo">🦎 TEAM.PRIME</div><div class="tp-sub">관리자 패널</div></div>
+    <div id="headerBadge" style="display:none"><span class="badge-admin" id="headerLabel"></span></div>
   </div>
 
   <div class="login-wrap" id="loginWrap">
@@ -107,56 +107,126 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div class="panel" id="panel">
-    <div class="tab-bar">
-      <button class="tab active" id="tab-reg-btn" onclick="switchTab('reg')">개체 등록</button>
-      <button class="tab" id="tab-list-btn" onclick="switchTab('list')">목록</button>
-      <button class="tab" id="tab-acct-btn" onclick="switchTab('acct')">계정 관리</button>
+    <div class="main-tabs">
+      <button class="main-tab active" id="amtab-parents" onclick="switchAdminMain('parents')">🦎 부모 개체</button>
+      <button class="main-tab" id="amtab-hatchlings" onclick="switchAdminMain('hatchlings')">🥚 해칭 개체</button>
     </div>
 
-    <div class="pane show" id="pane-reg">
-      <div id="saveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
-      <div id="saveErr" class="msg-err" style="display:none"></div>
-      <div class="field"><label>개체 이름 *</label><input type="text" id="aName" placeholder="이름 입력" autocomplete="off"></div>
-      <div class="field">
-        <label>성별</label>
-        <select id="aGender">
-          <option value="">선택 안 함</option>
-          <option value="수컷">수컷</option>
-          <option value="암컷">암컷</option>
-          <option value="미확인">미확인</option>
-        </select>
+    <!-- 부모 개체 섹션 -->
+    <div id="asection-parents">
+      <div class="tab-bar">
+        <button class="tab active" id="tab-reg-btn" onclick="switchTab('reg')">등록</button>
+        <button class="tab" id="tab-list-btn" onclick="switchTab('list')">목록</button>
+        <button class="tab" id="tab-acct-btn" onclick="switchTab('acct')">계정 관리</button>
       </div>
-      <div class="field"><label>모프</label><div class="morph-grid" id="morphGrid"></div></div>
-      <div class="field">
-        <label>사진 (최대 2장)</label>
-        <div class="upload-row">
-          <div class="upload-box"><input type="file" accept="image/*" onchange="handleImg(event,0)"><div id="uploadPh0"><div style="font-size:22px">📷</div><div class="upload-label">사진 1</div></div></div>
-          <div class="upload-box"><input type="file" accept="image/*" onchange="handleImg(event,1)"><div id="uploadPh1"><div style="font-size:22px">📷</div><div class="upload-label">사진 2</div></div></div>
+      <div class="pane show" id="pane-reg">
+        <div id="saveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
+        <div id="saveErr" class="msg-err" style="display:none"></div>
+        <div class="field">
+          <label>개체 이름 *</label>
+          <input type="text" id="aName" placeholder="이름 입력" autocomplete="off">
         </div>
+        <div class="field">
+          <label>개체 코드 * (브리더 내 고유값)</label>
+          <input type="text" id="aCode" placeholder="예: M (마블), S (사나)" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+          <div class="code-hint">브리더 코드 + 개체 코드로 해칭 코드가 생성됩니다</div>
+        </div>
+        <div class="field">
+          <label>성별</label>
+          <select id="aGender">
+            <option value="">선택 안 함</option>
+            <option value="수컷">수컷</option>
+            <option value="암컷">암컷</option>
+            <option value="미확인">미확인</option>
+          </select>
+        </div>
+        <div class="field"><label>모프</label><div class="morph-grid" id="morphGrid"></div></div>
+        <div class="field">
+          <label>사진 (최대 2장)</label>
+          <div class="upload-row">
+            <div class="upload-box"><input type="file" accept="image/*" onchange="handleImg(event,0)"><div id="uploadPh0"><div style="font-size:22px">📷</div><div class="upload-label">사진 1</div></div></div>
+            <div class="upload-box"><input type="file" accept="image/*" onchange="handleImg(event,1)"><div id="uploadPh1"><div style="font-size:22px">📷</div><div class="upload-label">사진 2</div></div></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveAnimal()">등록하기</button>
       </div>
-      <div style="margin-top:8px"><button class="btn btn-primary" onclick="saveAnimal()">등록하기</button></div>
+      <div class="pane" id="pane-list"><div id="adminList"></div></div>
+      <div class="pane" id="pane-acct">
+        <div id="acctOk" class="msg-ok" style="display:none"></div>
+        <div id="acctPanel"></div>
+      </div>
     </div>
 
-    <div class="pane" id="pane-list"><div id="adminList"></div></div>
+    <!-- 해칭 개체 섹션 -->
+    <div id="asection-hatchlings" style="display:none">
+      <div class="tab-bar">
+        <button class="tab active" id="tab-hreg-btn" onclick="switchHTab('hreg')">등록</button>
+        <button class="tab" id="tab-hlist-btn" onclick="switchHTab('hlist')">목록</button>
+      </div>
+      <div class="pane show" id="pane-hreg">
+        <div id="hsaveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
+        <div id="hsaveErr" class="msg-err" style="display:none"></div>
 
-    <div class="pane" id="pane-acct">
-      <div id="acctOk" class="msg-ok" style="display:none"></div>
-      <div id="acctPanel"></div>
+        <div class="field">
+          <label>부 (수컷 부모)</label>
+          <select id="hFather" onchange="updateHatchCode()">
+            <option value="">선택</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>모 (암컷 부모)</label>
+          <select id="hMother" onchange="updateHatchCode()">
+            <option value="">선택</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>해칭일</label>
+          <input type="date" id="hDate" oninput="updateHatchCode()">
+        </div>
+        <div class="field">
+          <label>클러치 번호</label>
+          <input type="number" id="hClutch" placeholder="예: 1" min="1" oninput="updateHatchCode()">
+        </div>
+        <div class="field">
+          <label>자동 생성 코드</label>
+          <div class="code-preview" id="hCodePreview">—</div>
+        </div>
+        <div class="field">
+          <label>성별</label>
+          <select id="hGender">
+            <option value="">선택 안 함</option>
+            <option value="수컷">수컷</option>
+            <option value="암컷">암컷</option>
+            <option value="미확인">미확인</option>
+          </select>
+        </div>
+        <div class="field"><label>모프</label><div class="morph-grid" id="hMorphGrid"></div></div>
+        <div class="field">
+          <label>사진 (최대 2장)</label>
+          <div class="upload-row">
+            <div class="upload-box"><input type="file" accept="image/*" onchange="handleHImg(event,0)"><div id="hUploadPh0"><div style="font-size:22px">📷</div><div class="upload-label">사진 1</div></div></div>
+            <div class="upload-box"><input type="file" accept="image/*" onchange="handleHImg(event,1)"><div id="hUploadPh1"><div style="font-size:22px">📷</div><div class="upload-label">사진 2</div></div></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveHatchling()">등록하기</button>
+      </div>
+      <div class="pane" id="pane-hlist"><div id="hAdminList"></div></div>
     </div>
 
     <div class="logout-row"><button class="btn btn-ghost" onclick="doLogout()">로그아웃</button></div>
   </div>
 </div>
 
-<!-- 수정 시트 -->
+<!-- 부모 수정 시트 -->
 <div class="edit-modal-bg" id="editModal" onclick="if(event.target===this)closeEdit()">
   <div class="edit-sheet">
     <div class="sheet-handle"></div>
-    <h3>개체 정보 수정</h3>
+    <h3>부모 개체 수정</h3>
     <div id="editOk" class="msg-ok" style="display:none">✓ 수정 완료</div>
     <div id="editErr" class="msg-err" style="display:none"></div>
     <input type="hidden" id="editId">
-    <div class="field"><label>개체 이름 *</label><input type="text" id="editName" placeholder="이름" autocomplete="off"></div>
+    <div class="field"><label>개체 이름 *</label><input type="text" id="editName" autocomplete="off"></div>
+    <div class="field"><label>개체 코드</label><input type="text" id="editCode" autocomplete="off" oninput="this.value=this.value.toUpperCase()"></div>
     <div class="field">
       <label>성별</label>
       <select id="editGender">
@@ -168,13 +238,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="field"><label>모프</label><div class="morph-grid" id="editMorphGrid"></div></div>
     <div class="field">
-      <label>사진 교체 (선택 — 비우면 기존 유지)</label>
+      <label>사진 교체 (비우면 기존 유지)</label>
       <div class="upload-row">
         <div class="upload-box"><input type="file" accept="image/*" onchange="handleEditImg(event,0)"><div id="editUploadPh0"><div style="font-size:22px">📷</div><div class="upload-label">사진 1</div></div></div>
         <div class="upload-box"><input type="file" accept="image/*" onchange="handleEditImg(event,1)"><div id="editUploadPh1"><div style="font-size:22px">📷</div><div class="upload-label">사진 2</div></div></div>
       </div>
     </div>
-    <div class="btn-row" style="display:flex;gap:8px;margin-top:8px">
+    <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-ghost" style="flex:1" onclick="closeEdit()">취소</button>
       <button class="btn btn-primary" style="flex:1" onclick="submitEdit()">저장</button>
     </div>
@@ -188,13 +258,15 @@ const STORAGE_URL=SUPABASE_URL+'/storage/v1/object/public/animal-images/';
 const STORAGE_UPLOAD=SUPABASE_URL+'/storage/v1/object/animal-images/';
 const MORPHS=['세이블','릴리','세이블릴리','노말','아잔틱','초초','카푸치노','SPT','프라푸치노','크림','세이블아잔틱','릴리아잔틱','세이블릴리아잔틱','100헷아잔틱','릴리100헷아잔틱'];
 const BREEDERS={mycresoft:'마이크레소프트',supremecre:'슈프림크레',morphstudio:'모프스튜디오',geckox:'게코오엑스',creming:'크레밍'};
+const BREEDER_CODE={mycresoft:'M',supremecre:'S',morphstudio:'P',geckox:'G',creming:'C'};
 const MASTER_ID='mycresoft';
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0;}return h.toString(36);}
 const CREDS={mycresoft:hash('prime2024!'),supremecre:hash('supreme!'),morphstudio:hash('morph!'),geckox:hash('geckox!'),creming:hash('creming!')};
 
-let currentUser=null,pendingFiles=[null,null],selectedMorph=null,animals=[];
+let currentUser=null,pendingFiles=[null,null],selectedMorph=null,animals=[],hatchlings=[];
 let editFiles=[null,null],editMorph=null,editOrigUrls=[null,null];
+let hPendingFiles=[null,null],hSelectedMorph=null;
 
 async function api(path,opts={}){
   const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,{
@@ -229,12 +301,14 @@ function doLogin(){
   document.getElementById('headerBadge').style.display='block';
   document.getElementById('headerLabel').textContent=BREEDERS[uid];
   if(uid!==MASTER_ID)document.getElementById('tab-acct-btn').style.display='none';
-  buildMorphGrid('morphGrid',v=>selectedMorph=v,()=>selectedMorph);
-  switchTab('reg');
+  buildMorphGrid('morphGrid','parent');
+  buildMorphGrid('hMorphGrid','hatch');
+  loadAnimalsForSelect();
+  switchAdminMain('parents');
 }
 
 function doLogout(){
-  currentUser=null;pendingFiles=[null,null];selectedMorph=null;
+  currentUser=null;pendingFiles=[null,null];selectedMorph=null;hPendingFiles=[null,null];hSelectedMorph=null;
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('panel').classList.remove('show');
   document.getElementById('headerBadge').style.display='none';
@@ -243,42 +317,79 @@ function doLogout(){
   document.getElementById('tab-acct-btn').style.display='';
 }
 
-function buildMorphGrid(gridId, setter, getter){
+function switchAdminMain(tab){
+  document.getElementById('asection-parents').style.display=tab==='parents'?'block':'none';
+  document.getElementById('asection-hatchlings').style.display=tab==='hatchlings'?'block':'none';
+  document.getElementById('amtab-parents').classList.toggle('active',tab==='parents');
+  document.getElementById('amtab-hatchlings').classList.toggle('active',tab==='hatchlings');
+}
+
+function buildMorphGrid(gridId,type){
   document.getElementById(gridId).innerHTML=MORPHS.map(m=>
-    `<div class="morph-chip" onclick="pickMorph('${m}',this,'${gridId}',event)">${m}</div>`
+    `<div class="morph-chip" onclick="pickMorph('${m}',this,'${type}')">${m}</div>`
   ).join('');
 }
 
-function pickMorph(name,el,gridId,e){
-  e && e.stopPropagation();
-  const grid=document.getElementById(gridId);
-  grid.querySelectorAll('.morph-chip').forEach(c=>c.classList.remove('selected'));
-  if(gridId==='morphGrid'){
-    if(selectedMorph===name){selectedMorph=null;return;}
-    selectedMorph=name;
-  } else {
-    if(editMorph===name){editMorph=null;return;}
-    editMorph=name;
-  }
+function pickMorph(name,el,type){
+  const gridId=type==='parent'?'morphGrid':type==='hatch'?'hMorphGrid':'editMorphGrid';
+  document.getElementById(gridId).querySelectorAll('.morph-chip').forEach(c=>c.classList.remove('selected'));
+  if(type==='parent'){if(selectedMorph===name){selectedMorph=null;return;}selectedMorph=name;}
+  else if(type==='hatch'){if(hSelectedMorph===name){hSelectedMorph=null;return;}hSelectedMorph=name;}
+  else{if(editMorph===name){editMorph=null;return;}editMorph=name;}
   el.classList.add('selected');
+}
+
+async function loadAnimalsForSelect(){
+  try{
+    animals=await api('animals?select=*&order=name.asc');
+    const myAnimals=currentUser===MASTER_ID?animals:animals.filter(a=>a.owner_id===currentUser);
+    const fatherSel=document.getElementById('hFather');
+    const motherSel=document.getElementById('hMother');
+    fatherSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='수컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
+    motherSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='암컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
+  }catch(e){}
+}
+
+/* 코드 자동 생성 */
+function updateHatchCode(){
+  const fatherSel=document.getElementById('hFather');
+  const motherSel=document.getElementById('hMother');
+  const dateVal=document.getElementById('hDate').value;
+  const clutch=document.getElementById('hClutch').value;
+  const fatherOpt=fatherSel.options[fatherSel.selectedIndex];
+  const motherOpt=motherSel.options[motherSel.selectedIndex];
+  const bc=BREEDER_CODE[currentUser]||'?';
+  const fc=fatherOpt&&fatherOpt.dataset.code?fatherOpt.dataset.code:'?';
+  const mc=motherOpt&&motherOpt.dataset.code?motherOpt.dataset.code:'?';
+  let code='—';
+  if(fatherSel.value&&motherSel.value&&dateVal&&clutch){
+    const d=new Date(dateVal);
+    const yr=String(d.getFullYear()).slice(-1);
+    const mm=String(d.getMonth()+1).padStart(2,'0');
+    const dd=String(d.getDate()).padStart(2,'0');
+    code=`${bc}${fc}${mc}-${yr}-${mm}${dd}-${clutch}`;
+  }
+  document.getElementById('hCodePreview').textContent=code;
 }
 
 function handleImg(e,idx){
   const file=e.target.files[0];if(!file)return;
   if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
   pendingFiles[idx]=file;
-  const r=new FileReader();
-  r.onload=ev=>{document.getElementById(`uploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};
-  r.readAsDataURL(file);
+  const r=new FileReader();r.onload=ev=>{document.getElementById(`uploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
+}
+
+function handleHImg(e,idx){
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
+  hPendingFiles[idx]=file;
+  const r=new FileReader();r.onload=ev=>{document.getElementById(`hUploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
 }
 
 function handleEditImg(e,idx){
   const file=e.target.files[0];if(!file)return;
-  if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
   editFiles[idx]=file;
-  const r=new FileReader();
-  r.onload=ev=>{document.getElementById(`editUploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};
-  r.readAsDataURL(file);
+  const r=new FileReader();r.onload=ev=>{document.getElementById(`editUploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
 }
 
 function showUploading(show){
@@ -289,73 +400,70 @@ function showUploading(show){
 
 async function saveAnimal(){
   const name=document.getElementById('aName').value.trim();
+  const code=document.getElementById('aCode').value.trim().toUpperCase();
   const gender=document.getElementById('aGender').value;
   const okEl=document.getElementById('saveOk'),errEl=document.getElementById('saveErr');
   okEl.style.display='none';errEl.style.display='none';
   if(!name){errEl.textContent='개체 이름을 입력해주세요';errEl.style.display='block';return;}
+  if(!code){errEl.textContent='개체 코드를 입력해주세요';errEl.style.display='block';return;}
+  // 중복 코드 확인
+  const myAnimals=animals.filter(a=>a.owner_id===currentUser);
+  if(myAnimals.find(a=>a.code===code)){errEl.textContent='이미 사용 중인 코드입니다';errEl.style.display='block';return;}
   showUploading(true);
   try{
-    let url1=null,url2=null;
     const ts=Date.now();
+    let url1=null,url2=null;
     if(pendingFiles[0])url1=await uploadImage(pendingFiles[0],`${currentUser}_${ts}_1.${pendingFiles[0].name.split('.').pop()}`);
     if(pendingFiles[1])url2=await uploadImage(pendingFiles[1],`${currentUser}_${ts}_2.${pendingFiles[1].name.split('.').pop()}`);
-    await api('animals',{method:'POST',body:JSON.stringify({name,gender:gender||null,morph:selectedMorph||null,image_url:url1,image_url_2:url2,owner_id:currentUser,owner_label:BREEDERS[currentUser]})});
+    await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:selectedMorph||null,image_url:url1,image_url_2:url2,owner_id:currentUser,owner_label:BREEDERS[currentUser]})});
     okEl.style.display='block';
-    document.getElementById('aName').value='';document.getElementById('aGender').value='';
+    document.getElementById('aName').value='';document.getElementById('aCode').value='';document.getElementById('aGender').value='';
     document.querySelectorAll('#morphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
     selectedMorph=null;pendingFiles=[null,null];
     ['uploadPh0','uploadPh1'].forEach((id,i)=>{document.getElementById(id).innerHTML=`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;});
     setTimeout(()=>okEl.style.display='none',2500);
+    await loadAnimalsForSelect();
   }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
   finally{showUploading(false);}
 }
 
-function openEdit(id){
-  const a=animals.find(x=>x.id===id);if(!a)return;
-  editMorph=a.morph||null;
-  editFiles=[null,null];
-  editOrigUrls=[a.image_url||null,a.image_url_2||null];
-  document.getElementById('editId').value=id;
-  document.getElementById('editName').value=a.name;
-  document.getElementById('editGender').value=a.gender||'';
-  buildMorphGrid('editMorphGrid',v=>editMorph=v,()=>editMorph);
-  // 기존 선택 모프 표시
-  if(a.morph){
-    setTimeout(()=>{
-      document.querySelectorAll('#editMorphGrid .morph-chip').forEach(c=>{
-        if(c.textContent===a.morph)c.classList.add('selected');
-      });
-    },50);
-  }
-  // 기존 사진 미리보기
-  ['editUploadPh0','editUploadPh1'].forEach((id,i)=>{
-    const url=i===0?a.image_url:a.image_url_2;
-    document.getElementById(id).innerHTML=url
-      ?`<img src="${url}" class="upload-preview"><div class="upload-label">사진 ${i+1} (기존)</div>`
-      :`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;
-  });
-  document.getElementById('editModal').classList.add('open');
-}
-
-function closeEdit(){document.getElementById('editModal').classList.remove('open');}
-
-async function submitEdit(){
-  const id=document.getElementById('editId').value;
-  const name=document.getElementById('editName').value.trim();
-  const gender=document.getElementById('editGender').value;
-  const okEl=document.getElementById('editOk'),errEl=document.getElementById('editErr');
+async function saveHatchling(){
+  const fatherId=document.getElementById('hFather').value;
+  const motherId=document.getElementById('hMother').value;
+  const dateVal=document.getElementById('hDate').value;
+  const clutch=document.getElementById('hClutch').value;
+  const gender=document.getElementById('hGender').value;
+  const codeText=document.getElementById('hCodePreview').textContent;
+  const okEl=document.getElementById('hsaveOk'),errEl=document.getElementById('hsaveErr');
   okEl.style.display='none';errEl.style.display='none';
-  if(!name){errEl.textContent='이름을 입력해주세요';errEl.style.display='block';return;}
+  if(!fatherId||!motherId||!dateVal||!clutch){errEl.textContent='부, 모, 해칭일, 클러치 번호를 모두 입력해주세요';errEl.style.display='block';return;}
+  if(codeText==='—'){errEl.textContent='코드를 먼저 생성해주세요';errEl.style.display='block';return;}
+  const father=animals.find(a=>a.id===fatherId);
+  const mother=animals.find(a=>a.id===motherId);
   showUploading(true);
   try{
     const ts=Date.now();
-    let url1=editOrigUrls[0],url2=editOrigUrls[1];
-    if(editFiles[0])url1=await uploadImage(editFiles[0],`${currentUser}_${ts}_1.${editFiles[0].name.split('.').pop()}`);
-    if(editFiles[1])url2=await uploadImage(editFiles[1],`${currentUser}_${ts}_2.${editFiles[1].name.split('.').pop()}`);
-    await api(`animals?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({name,gender:gender||null,morph:editMorph||null,image_url:url1,image_url_2:url2})});
+    let url1=null,url2=null;
+    if(hPendingFiles[0])url1=await uploadImage(hPendingFiles[0],`h_${currentUser}_${ts}_1.${hPendingFiles[0].name.split('.').pop()}`);
+    if(hPendingFiles[1])url2=await uploadImage(hPendingFiles[1],`h_${currentUser}_${ts}_2.${hPendingFiles[1].name.split('.').pop()}`);
+    await api('hatchlings',{method:'POST',body:JSON.stringify({
+      code:codeText,
+      father_id:fatherId,mother_id:motherId,
+      father_code:father?.code||null,mother_code:mother?.code||null,
+      morph:hSelectedMorph||null,gender:gender||null,
+      image_url:url1,image_url_2:url2,
+      owner_id:currentUser,owner_label:BREEDERS[currentUser],
+      hatch_date:dateVal,clutch_no:parseInt(clutch)
+    })});
     okEl.style.display='block';
-    setTimeout(()=>{okEl.style.display='none';closeEdit();renderAdminList();},1500);
-  }catch(e){errEl.textContent='수정 실패: '+e.message;errEl.style.display='block';}
+    document.getElementById('hFather').value='';document.getElementById('hMother').value='';
+    document.getElementById('hDate').value='';document.getElementById('hClutch').value='';
+    document.getElementById('hGender').value='';document.getElementById('hCodePreview').textContent='—';
+    document.querySelectorAll('#hMorphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
+    hSelectedMorph=null;hPendingFiles=[null,null];
+    ['hUploadPh0','hUploadPh1'].forEach((id,i)=>{document.getElementById(id).innerHTML=`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;});
+    setTimeout(()=>okEl.style.display='none',2500);
+  }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
   finally{showUploading(false);}
 }
 
@@ -371,12 +479,37 @@ async function renderAdminList(){
       return `<div class="list-item">
         <div class="list-item-thumb">${thumb}</div>
         <div class="list-item-info">
-          <p>${a.name}${a.morph?`<span class="morph-mini">${a.morph}</span>`:''}</p>
+          <p>${a.name}${a.code?` <span style="font-family:monospace;font-size:10px;color:#aaa">${a.code}</span>`:''}${a.morph?`<span class="morph-mini">${a.morph}</span>`:''}</p>
           <span>${a.owner_label}${a.gender?' · '+a.gender:''}</span>
         </div>
         <div class="list-item-actions">
           <button class="btn-edit" onclick="openEdit('${a.id}')">수정</button>
           <button class="btn-danger" onclick="deleteAnimal('${a.id}','${a.name}')">삭제</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML=`<p style="font-size:13px;color:#e00;padding:12px 0">오류: ${e.message}</p>`;}
+}
+
+async function renderHatchlingList(){
+  const el=document.getElementById('hAdminList');
+  el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
+  const filter=currentUser===MASTER_ID?'hatchlings?select=*&order=created_at.desc':`hatchlings?select=*&owner_id=eq.${currentUser}&order=created_at.desc`;
+  try{
+    hatchlings=await api(filter);
+    if(!hatchlings.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 해칭 개체가 없습니다</p>';return;}
+    el.innerHTML=hatchlings.map(h=>{
+      const thumb=h.image_url?`<img src="${h.image_url}" alt="${h.code}">`:`<span style="font-size:20px">🥚</span>`;
+      const father=animals.find(a=>a.id===h.father_id);
+      const mother=animals.find(a=>a.id===h.mother_id);
+      return `<div class="list-item">
+        <div class="list-item-thumb">${thumb}</div>
+        <div class="list-item-info">
+          <p style="font-family:monospace;font-size:12px">${h.code}</p>
+          <span>${h.morph||'모프미확인'}${father?' · '+father.name:''}${mother?' × '+mother.name:''}</span>
+        </div>
+        <div class="list-item-actions">
+          <button class="btn-danger" onclick="deleteHatchling('${h.id}','${h.code}')">삭제</button>
         </div>
       </div>`;
     }).join('');
@@ -389,35 +522,69 @@ async function deleteAnimal(id,name){
   catch(e){alert('삭제 실패: '+e.message);}
 }
 
+async function deleteHatchling(id,code){
+  if(!confirm(`"${code}" 해칭 개체를 삭제하시겠습니까?`))return;
+  try{await api(`hatchlings?id=eq.${id}`,{method:'DELETE'});renderHatchlingList();}
+  catch(e){alert('삭제 실패: '+e.message);}
+}
+
+function openEdit(id){
+  const a=animals.find(x=>x.id===id);if(!a)return;
+  editMorph=a.morph||null;editFiles=[null,null];editOrigUrls=[a.image_url||null,a.image_url_2||null];
+  document.getElementById('editId').value=id;
+  document.getElementById('editName').value=a.name;
+  document.getElementById('editCode').value=a.code||'';
+  document.getElementById('editGender').value=a.gender||'';
+  buildMorphGrid('editMorphGrid','edit');
+  if(a.morph){setTimeout(()=>{document.querySelectorAll('#editMorphGrid .morph-chip').forEach(c=>{if(c.textContent===a.morph)c.classList.add('selected');});},50);}
+  ['editUploadPh0','editUploadPh1'].forEach((pid,i)=>{
+    const url=i===0?a.image_url:a.image_url_2;
+    document.getElementById(pid).innerHTML=url?`<img src="${url}" class="upload-preview"><div class="upload-label">사진 ${i+1} (기존)</div>`:`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;
+  });
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeEdit(){document.getElementById('editModal').classList.remove('open');}
+
+async function submitEdit(){
+  const id=document.getElementById('editId').value;
+  const name=document.getElementById('editName').value.trim();
+  const code=document.getElementById('editCode').value.trim().toUpperCase();
+  const gender=document.getElementById('editGender').value;
+  const okEl=document.getElementById('editOk'),errEl=document.getElementById('editErr');
+  okEl.style.display='none';errEl.style.display='none';
+  if(!name){errEl.textContent='이름을 입력해주세요';errEl.style.display='block';return;}
+  showUploading(true);
+  try{
+    const ts=Date.now();
+    let url1=editOrigUrls[0],url2=editOrigUrls[1];
+    if(editFiles[0])url1=await uploadImage(editFiles[0],`${currentUser}_${ts}_1.${editFiles[0].name.split('.').pop()}`);
+    if(editFiles[1])url2=await uploadImage(editFiles[1],`${currentUser}_${ts}_2.${editFiles[1].name.split('.').pop()}`);
+    await api(`animals?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:url1,image_url_2:url2})});
+    okEl.style.display='block';
+    setTimeout(()=>{okEl.style.display='none';closeEdit();renderAdminList();},1500);
+  }catch(e){errEl.textContent='수정 실패: '+e.message;errEl.style.display='block';}
+  finally{showUploading(false);}
+}
+
 async function renderAcctPanel(){
   const el=document.getElementById('acctPanel');
   if(currentUser!==MASTER_ID){el.innerHTML='<p style="font-size:13px;color:#888;padding:10px 0">마이크레소프트 계정만 접근 가능합니다.</p>';return;}
-  // 방문자 수
   let visitorHtml='';
-  try{
-    const r=await api('visitor_count?id=eq.1');
-    const cnt=r&&r[0]?r[0].count:0;
-    visitorHtml=`<div class="visitor-box"><div class="num">${cnt.toLocaleString()}</div><div class="lbl">누적 방문자</div></div>`;
-  }catch(e){}
-  el.innerHTML=visitorHtml+
-    `<p style="font-size:12px;color:#888;margin-bottom:14px">각 브리더 계정의 비밀번호를 변경합니다.</p>`+
+  try{const r=await api('visitor_count?id=eq.1');const cnt=r&&r[0]?r[0].count:0;visitorHtml=`<div class="visitor-box"><div class="num">${cnt.toLocaleString()}</div><div class="lbl">누적 방문자</div></div>`;}catch(e){}
+  el.innerHTML=visitorHtml+`<p style="font-size:12px;color:#888;margin-bottom:14px">비밀번호 변경</p>`+
     Object.entries(BREEDERS).map(([uid,label])=>`
-      <div class="acct-row">
-        <div class="acct-row-info"><p>${label}</p><span>${uid}</span></div>
-        <button class="btn-danger" onclick="changePw('${uid}')">변경</button>
-      </div>`).join('')+
-    `<p style="font-size:11px;color:#bbb;margin-top:16px;line-height:1.6">※ 영구 변경은 admin.html 파일 내 CREDS를 직접 수정하세요.</p>`;
+      <div class="acct-row"><div class="acct-row-info"><p>${label}</p><span>${uid}</span></div>
+      <button class="btn-danger" onclick="changePw('${uid}')">변경</button></div>`).join('');
 }
 
 function changePw(uid){
   const np=prompt(`${BREEDERS[uid]}\n새 비밀번호 (4자 이상):`);
-  if(np===null)return;
-  if(np.length<4){alert('4자 이상 입력하세요');return;}
+  if(np===null)return;if(np.length<4){alert('4자 이상 입력하세요');return;}
   CREDS[uid]=hash(np);
   const ok=document.getElementById('acctOk');
   ok.textContent=`✓ ${BREEDERS[uid]} 비밀번호 변경됨 (이 세션 한정)`;
-  ok.style.display='block';
-  setTimeout(()=>ok.style.display='none',3000);
+  ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);
 }
 
 function switchTab(tab){
@@ -427,6 +594,14 @@ function switchTab(tab){
   });
   if(tab==='list')renderAdminList();
   if(tab==='acct')renderAcctPanel();
+}
+
+function switchHTab(tab){
+  ['hreg','hlist'].forEach(t=>{
+    document.getElementById(`pane-${t}`).classList.toggle('show',t===tab);
+    document.getElementById(`tab-${t}-btn`).classList.toggle('active',t===tab);
+  });
+  if(tab==='hlist'){renderAdminList();renderHatchlingList();}
 }
 </script>
 </body>
