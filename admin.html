@@ -73,7 +73,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .visitor-box{background:#f5f5f5;border:1px solid #eee;padding:16px;margin-bottom:16px;text-align:center}
 .visitor-box .num{font-size:36px;font-weight:800;color:#000}
 .visitor-box .lbl{font-size:12px;color:#888;margin-top:4px}
-.section-divider{font-size:11px;font-weight:700;letter-spacing:0.08em;color:#888;text-transform:uppercase;margin:16px 0 10px;padding-top:16px;border-top:1px solid #eee}
 </style>
 </head>
 <body>
@@ -94,7 +93,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="mycresoft">마이크레소프트</option>
           <option value="supremecre">슈프림크레</option>
           <option value="morphstudio">모프스튜디오</option>
-          <option value="geckox">게코오엑스</option>
+          <option value="geckox">게코엑스</option>
           <option value="creming">크레밍</option>
         </select>
       </div>
@@ -122,10 +121,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="pane show" id="pane-reg">
         <div id="saveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
         <div id="saveErr" class="msg-err" style="display:none"></div>
-        <div class="field">
-          <label>개체 이름 *</label>
-          <input type="text" id="aName" placeholder="이름 입력" autocomplete="off">
-        </div>
+        <div class="field"><label>개체 이름 *</label><input type="text" id="aName" placeholder="이름 입력" autocomplete="off"></div>
         <div class="field">
           <label>개체 코드 * (브리더 내 고유값)</label>
           <input type="text" id="aCode" placeholder="예: M (마블), S (사나)" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
@@ -166,31 +162,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="pane show" id="pane-hreg">
         <div id="hsaveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
         <div id="hsaveErr" class="msg-err" style="display:none"></div>
-
-        <div class="field">
-          <label>부 (수컷 부모)</label>
-          <select id="hFather" onchange="updateHatchCode()">
-            <option value="">선택</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>모 (암컷 부모)</label>
-          <select id="hMother" onchange="updateHatchCode()">
-            <option value="">선택</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>해칭일</label>
-          <input type="date" id="hDate" oninput="updateHatchCode()">
-        </div>
-        <div class="field">
-          <label>클러치 번호</label>
-          <input type="number" id="hClutch" placeholder="예: 1" min="1" oninput="updateHatchCode()">
-        </div>
-        <div class="field">
-          <label>자동 생성 코드</label>
-          <div class="code-preview" id="hCodePreview">—</div>
-        </div>
+        <div class="field"><label>부 (수컷 부모)</label><select id="hFather" onchange="updateHatchCode()"><option value="">선택</option></select></div>
+        <div class="field"><label>모 (암컷 부모)</label><select id="hMother" onchange="updateHatchCode()"><option value="">선택</option></select></div>
+        <div class="field"><label>해칭일</label><input type="date" id="hDate" oninput="updateHatchCode()"></div>
+        <div class="field"><label>클러치 번호</label><input type="number" id="hClutch" placeholder="예: 1" min="1" oninput="updateHatchCode()"></div>
+        <div class="field"><label>자동 생성 코드</label><div class="code-preview" id="hCodePreview">—</div></div>
         <div class="field">
           <label>성별</label>
           <select id="hGender">
@@ -201,13 +177,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </select>
         </div>
         <div class="field"><label>모프</label><div class="morph-grid" id="hMorphGrid"></div></div>
-        <div class="field">
-          <label>사진 (최대 2장)</label>
-          <div class="upload-row">
-            <div class="upload-box"><input type="file" accept="image/*" onchange="handleHImg(event,0)"><div id="hUploadPh0"><div style="font-size:22px">📷</div><div class="upload-label">사진 1</div></div></div>
-            <div class="upload-box"><input type="file" accept="image/*" onchange="handleHImg(event,1)"><div id="hUploadPh1"><div style="font-size:22px">📷</div><div class="upload-label">사진 2</div></div></div>
-          </div>
-        </div>
         <button class="btn btn-primary" onclick="saveHatchling()">등록하기</button>
       </div>
       <div class="pane" id="pane-hlist"><div id="hAdminList"></div></div>
@@ -254,11 +223,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const SUPABASE_URL='https://yoiytrwuojrgvjwsywlt.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
-const STORAGE_URL=SUPABASE_URL+'/storage/v1/object/public/animal-images/';
-const STORAGE_UPLOAD=SUPABASE_URL+'/storage/v1/object/animal-images/';
+
+// Cloudflare R2 설정
+const R2_PUBLIC='https://pub-c81d9d63e60e4cb7833abb7d7878490d.r2.dev';
+const R2_ENDPOINT='https://289c96f8798d8b4173b1b237cf5daa3a.r2.cloudflarestorage.com';
+const R2_ACCESS_KEY='46989b9fbe1756db91e76e48ca339a3d';
+const R2_SECRET_KEY='484094a412fe7888c6bed6138ba54b192706695386de35f40eac63d80330274d';
+const R2_BUCKET='team-prime-images';
+
 const MORPHS=['세이블','릴리','세이블릴리','노말','아잔틱','초초','카푸치노','SPT','프라푸치노','크림','세이블아잔틱','릴리아잔틱','세이블릴리아잔틱','100헷아잔틱','릴리100헷아잔틱'];
-const BREEDERS={mycresoft:'마이크레소프트',supremecre:'슈프림크레',morphstudio:'모프스튜디오',geckox:'게코오엑스',creming:'크레밍'};
-const BREEDER_CODE={mycresoft:'M',supremecre:'S',morphstudio:'P',geckox:'G',creming:'C'};
+const BREEDERS={mycresoft:'마이크레소프트',supremecre:'슈프림크레',morphstudio:'모프스튜디오',geckox:'게코엑스',creming:'크레밍'};
+const BREEDER_CODE={mycresoft:'MCS',supremecre:'SC',morphstudio:'STU',geckox:'GX',creming:'MG'};
 const MASTER_ID='mycresoft';
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0;}return h.toString(36);}
@@ -266,7 +241,7 @@ const CREDS={mycresoft:hash('prime2024!'),supremecre:hash('supreme!'),morphstudi
 
 let currentUser=null,pendingFiles=[null,null],selectedMorph=null,animals=[],hatchlings=[];
 let editFiles=[null,null],editMorph=null,editOrigUrls=[null,null];
-let hPendingFiles=[null,null],hSelectedMorph=null;
+let hSelectedMorph=null;
 
 async function api(path,opts={}){
   const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,{
@@ -278,14 +253,51 @@ async function api(path,opts={}){
   return t?JSON.parse(t):null;
 }
 
-async function uploadImage(file,filename){
-  const res=await fetch(STORAGE_UPLOAD+filename,{
-    method:'POST',
-    headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':file.type,'x-upsert':'true'},
-    body:file
+// AWS S3 호환 서명으로 R2 업로드
+async function uploadToR2(file, filename) {
+  const region = 'auto';
+  const service = 's3';
+  const host = `${R2_ENDPOINT.replace('https://','')}`;
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g,'').slice(0,15)+'Z';
+  const dateStamp = amzDate.slice(0,8);
+  const url = `${R2_ENDPOINT}/${R2_BUCKET}/${filename}`;
+
+  // 파일을 ArrayBuffer로 변환
+  const fileBuffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer);
+  const payloadHash = Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+  const canonicalHeaders = `content-type:${file.type}\nhost:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders = 'content-type;host;x-amz-content-sha256;x-amz-date';
+  const canonicalRequest = `PUT\n/${R2_BUCKET}/${filename}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credentialScope}\n`+
+    Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalRequest)))).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+  async function hmac(key, data) {
+    const k = typeof key==='string' ? new TextEncoder().encode(key) : key;
+    const cryptoKey = await crypto.subtle.importKey('raw',k,{name:'HMAC',hash:'SHA-256'},false,['sign']);
+    return await crypto.subtle.sign('HMAC', cryptoKey, typeof data==='string'?new TextEncoder().encode(data):data);
+  }
+
+  const signingKey = await hmac(await hmac(await hmac(await hmac('AWS4'+R2_SECRET_KEY, dateStamp), region), service), 'aws4_request');
+  const signature = Array.from(new Uint8Array(await hmac(signingKey, stringToSign))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const authorization = `AWS4-HMAC-SHA256 Credential=${R2_ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type,
+      'x-amz-date': amzDate,
+      'x-amz-content-sha256': payloadHash,
+      'Authorization': authorization
+    },
+    body: fileBuffer
   });
-  if(!res.ok)throw new Error(await res.text());
-  return STORAGE_URL+filename;
+  if(!res.ok) throw new Error(`R2 업로드 실패: ${res.status} ${await res.text()}`);
+  return `${R2_PUBLIC}/${filename}`;
 }
 
 function doLogin(){
@@ -308,7 +320,7 @@ function doLogin(){
 }
 
 function doLogout(){
-  currentUser=null;pendingFiles=[null,null];selectedMorph=null;hPendingFiles=[null,null];hSelectedMorph=null;
+  currentUser=null;pendingFiles=[null,null];selectedMorph=null;hSelectedMorph=null;
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('panel').classList.remove('show');
   document.getElementById('headerBadge').style.display='none';
@@ -343,31 +355,30 @@ async function loadAnimalsForSelect(){
   try{
     animals=await api('animals?select=*&order=name.asc');
     const myAnimals=currentUser===MASTER_ID?animals:animals.filter(a=>a.owner_id===currentUser);
-    const fatherSel=document.getElementById('hFather');
-    const motherSel=document.getElementById('hMother');
-    fatherSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='수컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
-    motherSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='암컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
+    const fSel=document.getElementById('hFather');
+    const mSel=document.getElementById('hMother');
+    fSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='수컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
+    mSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='암컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
   }catch(e){}
 }
 
-/* 코드 자동 생성 */
 function updateHatchCode(){
-  const fatherSel=document.getElementById('hFather');
-  const motherSel=document.getElementById('hMother');
+  const fSel=document.getElementById('hFather');
+  const mSel=document.getElementById('hMother');
   const dateVal=document.getElementById('hDate').value;
   const clutch=document.getElementById('hClutch').value;
-  const fatherOpt=fatherSel.options[fatherSel.selectedIndex];
-  const motherOpt=motherSel.options[motherSel.selectedIndex];
+  const fOpt=fSel.options[fSel.selectedIndex];
+  const mOpt=mSel.options[mSel.selectedIndex];
   const bc=BREEDER_CODE[currentUser]||'?';
-  const fc=fatherOpt&&fatherOpt.dataset.code?fatherOpt.dataset.code:'?';
-  const mc=motherOpt&&motherOpt.dataset.code?motherOpt.dataset.code:'?';
+  const fc=fOpt&&fOpt.dataset.code?fOpt.dataset.code:'?';
+  const mc=mOpt&&mOpt.dataset.code?mOpt.dataset.code:'?';
   let code='—';
-  if(fatherSel.value&&motherSel.value&&dateVal&&clutch){
+  if(fSel.value&&mSel.value&&dateVal&&clutch){
     const d=new Date(dateVal);
     const yr=String(d.getFullYear()).slice(-1);
     const mm=String(d.getMonth()+1).padStart(2,'0');
     const dd=String(d.getDate()).padStart(2,'0');
-    code=`${bc}${fc}${mc}-${yr}-${mm}${dd}-${clutch}`;
+    code=`${bc}-${fc}${mc}-${yr}-${mm}${dd}-${clutch}`;
   }
   document.getElementById('hCodePreview').textContent=code;
 }
@@ -377,13 +388,6 @@ function handleImg(e,idx){
   if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
   pendingFiles[idx]=file;
   const r=new FileReader();r.onload=ev=>{document.getElementById(`uploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
-}
-
-function handleHImg(e,idx){
-  const file=e.target.files[0];if(!file)return;
-  if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
-  hPendingFiles[idx]=file;
-  const r=new FileReader();r.onload=ev=>{document.getElementById(`hUploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
 }
 
 function handleEditImg(e,idx){
@@ -406,15 +410,14 @@ async function saveAnimal(){
   okEl.style.display='none';errEl.style.display='none';
   if(!name){errEl.textContent='개체 이름을 입력해주세요';errEl.style.display='block';return;}
   if(!code){errEl.textContent='개체 코드를 입력해주세요';errEl.style.display='block';return;}
-  // 중복 코드 확인
   const myAnimals=animals.filter(a=>a.owner_id===currentUser);
   if(myAnimals.find(a=>a.code===code)){errEl.textContent='이미 사용 중인 코드입니다';errEl.style.display='block';return;}
   showUploading(true);
   try{
     const ts=Date.now();
     let url1=null,url2=null;
-    if(pendingFiles[0])url1=await uploadImage(pendingFiles[0],`${currentUser}_${ts}_1.${pendingFiles[0].name.split('.').pop()}`);
-    if(pendingFiles[1])url2=await uploadImage(pendingFiles[1],`${currentUser}_${ts}_2.${pendingFiles[1].name.split('.').pop()}`);
+    if(pendingFiles[0])url1=await uploadToR2(pendingFiles[0],`${currentUser}_${ts}_1.${pendingFiles[0].name.split('.').pop()}`);
+    if(pendingFiles[1])url2=await uploadToR2(pendingFiles[1],`${currentUser}_${ts}_2.${pendingFiles[1].name.split('.').pop()}`);
     await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:selectedMorph||null,image_url:url1,image_url_2:url2,owner_id:currentUser,owner_label:BREEDERS[currentUser]})});
     okEl.style.display='block';
     document.getElementById('aName').value='';document.getElementById('aCode').value='';document.getElementById('aGender').value='';
@@ -442,16 +445,12 @@ async function saveHatchling(){
   const mother=animals.find(a=>a.id===motherId);
   showUploading(true);
   try{
-    const ts=Date.now();
-    let url1=null,url2=null;
-    if(hPendingFiles[0])url1=await uploadImage(hPendingFiles[0],`h_${currentUser}_${ts}_1.${hPendingFiles[0].name.split('.').pop()}`);
-    if(hPendingFiles[1])url2=await uploadImage(hPendingFiles[1],`h_${currentUser}_${ts}_2.${hPendingFiles[1].name.split('.').pop()}`);
     await api('hatchlings',{method:'POST',body:JSON.stringify({
       code:codeText,
       father_id:fatherId,mother_id:motherId,
       father_code:father?.code||null,mother_code:mother?.code||null,
       morph:hSelectedMorph||null,gender:gender||null,
-      image_url:url1,image_url_2:url2,
+      image_url:null,image_url_2:null,
       owner_id:currentUser,owner_label:BREEDERS[currentUser],
       hatch_date:dateVal,clutch_no:parseInt(clutch)
     })});
@@ -460,8 +459,7 @@ async function saveHatchling(){
     document.getElementById('hDate').value='';document.getElementById('hClutch').value='';
     document.getElementById('hGender').value='';document.getElementById('hCodePreview').textContent='—';
     document.querySelectorAll('#hMorphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
-    hSelectedMorph=null;hPendingFiles=[null,null];
-    ['hUploadPh0','hUploadPh1'].forEach((id,i)=>{document.getElementById(id).innerHTML=`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;});
+    hSelectedMorph=null;
     setTimeout(()=>okEl.style.display='none',2500);
   }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
   finally{showUploading(false);}
@@ -494,16 +492,15 @@ async function renderAdminList(){
 async function renderHatchlingList(){
   const el=document.getElementById('hAdminList');
   el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
-  const filter=currentUser===MASTER_ID?'hatchlings?select=*&order=created_at.desc':`hatchlings?select=*&owner_id=eq.${currentUser}&order=created_at.desc`;
+  const filter=currentUser===MASTER_ID?'hatchlings?select=*&order=hatch_date.desc':`hatchlings?select=*&owner_id=eq.${currentUser}&order=hatch_date.desc`;
   try{
     hatchlings=await api(filter);
     if(!hatchlings.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 해칭 개체가 없습니다</p>';return;}
     el.innerHTML=hatchlings.map(h=>{
-      const thumb=h.image_url?`<img src="${h.image_url}" alt="${h.code}">`:`<span style="font-size:20px">🥚</span>`;
       const father=animals.find(a=>a.id===h.father_id);
       const mother=animals.find(a=>a.id===h.mother_id);
       return `<div class="list-item">
-        <div class="list-item-thumb">${thumb}</div>
+        <div class="list-item-thumb" style="font-size:20px">🥚</div>
         <div class="list-item-info">
           <p style="font-family:monospace;font-size:12px">${h.code}</p>
           <span>${h.morph||'모프미확인'}${father?' · '+father.name:''}${mother?' × '+mother.name:''}</span>
@@ -558,8 +555,8 @@ async function submitEdit(){
   try{
     const ts=Date.now();
     let url1=editOrigUrls[0],url2=editOrigUrls[1];
-    if(editFiles[0])url1=await uploadImage(editFiles[0],`${currentUser}_${ts}_1.${editFiles[0].name.split('.').pop()}`);
-    if(editFiles[1])url2=await uploadImage(editFiles[1],`${currentUser}_${ts}_2.${editFiles[1].name.split('.').pop()}`);
+    if(editFiles[0])url1=await uploadToR2(editFiles[0],`${currentUser}_${ts}_1.${editFiles[0].name.split('.').pop()}`);
+    if(editFiles[1])url2=await uploadToR2(editFiles[1],`${currentUser}_${ts}_2.${editFiles[1].name.split('.').pop()}`);
     await api(`animals?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:url1,image_url_2:url2})});
     okEl.style.display='block';
     setTimeout(()=>{okEl.style.display='none';closeEdit();renderAdminList();},1500);
