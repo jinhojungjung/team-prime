@@ -107,8 +107,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="panel" id="panel">
     <div class="main-tabs">
-      <button class="main-tab active" id="amtab-parents" onclick="switchAdminMain('parents')">🦎 부모 개체</button>
-      <button class="main-tab" id="amtab-hatchlings" onclick="switchAdminMain('hatchlings')">🥚 해칭 개체</button>
+      <button class="main-tab active" id="amtab-parents" onclick="switchAdminMain('parents')">🦎 부모</button>
+      <button class="main-tab" id="amtab-hatchlings" onclick="switchAdminMain('hatchlings')">🥚 해칭</button>
+      <button class="main-tab" id="amtab-posts" onclick="switchAdminMain('posts')">📖 가이드</button>
     </div>
 
     <!-- 부모 개체 섹션 -->
@@ -184,6 +185,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="btn btn-primary" onclick="saveHatchling()">등록하기</button>
       </div>
       <div class="pane" id="pane-hlist"><div id="hAdminList"></div></div>
+    </div>
+
+    <!-- 게시글 섹션 -->
+    <div id="asection-posts" style="display:none">
+      <div class="tab-bar">
+        <button class="tab active" id="tab-preg-btn" onclick="switchPTab('preg')">등록</button>
+        <button class="tab" id="tab-plist-btn" onclick="switchPTab('plist')">목록</button>
+      </div>
+      <div class="pane show" id="pane-preg">
+        <div id="psaveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
+        <div id="psaveErr" class="msg-err" style="display:none"></div>
+        <div class="field">
+          <label>카테고리</label>
+          <select id="pCategory">
+            <option value="">선택 안 함</option>
+            <option value="알관리">알관리</option>
+            <option value="해칭">해칭</option>
+            <option value="사육환경">사육환경</option>
+            <option value="먹이">먹이</option>
+            <option value="건강">건강</option>
+            <option value="공지">공지</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>제목 *</label>
+          <input type="text" id="pTitle" placeholder="제목 입력" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>내용 *</label>
+          <textarea id="pContent" placeholder="내용을 입력하세요..." style="width:100%;height:200px;padding:11px 13px;font-size:14px;border:1px solid #000;background:#fff;color:#000;border-radius:0;font-family:inherit;outline:none;resize:vertical;line-height:1.6"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="savePost()">등록하기</button>
+      </div>
+      <div class="pane" id="pane-plist"><div id="postAdminList"></div></div>
     </div>
 
     <div class="logout-row"><button class="btn btn-ghost" onclick="doLogout()">로그아웃</button></div>
@@ -334,10 +370,11 @@ function doLogout(){
 }
 
 function switchAdminMain(tab){
-  document.getElementById('asection-parents').style.display=tab==='parents'?'block':'none';
-  document.getElementById('asection-hatchlings').style.display=tab==='hatchlings'?'block':'none';
-  document.getElementById('amtab-parents').classList.toggle('active',tab==='parents');
-  document.getElementById('amtab-hatchlings').classList.toggle('active',tab==='hatchlings');
+  ['parents','hatchlings','posts'].forEach(t=>{
+    document.getElementById(`asection-${t}`).style.display=t===tab?'block':'none';
+    document.getElementById(`amtab-${t}`).classList.toggle('active',t===tab);
+  });
+  if(tab==='posts'&&document.getElementById('pane-plist').classList.contains('show'))renderPostList();
 }
 
 function buildMorphGrid(gridId,type){
@@ -630,6 +667,63 @@ function switchHTab(tab){
     document.getElementById(`tab-${t}-btn`).classList.toggle('active',t===tab);
   });
   if(tab==='hlist'){renderAdminList();renderHatchlingList();}
+}
+
+function switchPTab(tab){
+  ['preg','plist'].forEach(t=>{
+    document.getElementById(`pane-${t}`).classList.toggle('show',t===tab);
+    document.getElementById(`tab-${t}-btn`).classList.toggle('active',t===tab);
+  });
+  if(tab==='plist')renderPostList();
+}
+
+async function savePost(){
+  const title=document.getElementById('pTitle').value.trim();
+  const content=document.getElementById('pContent').value.trim();
+  const category=document.getElementById('pCategory').value;
+  const okEl=document.getElementById('psaveOk'),errEl=document.getElementById('psaveErr');
+  okEl.style.display='none';errEl.style.display='none';
+  if(!title){errEl.textContent='제목을 입력해주세요';errEl.style.display='block';return;}
+  if(!content){errEl.textContent='내용을 입력해주세요';errEl.style.display='block';return;}
+  try{
+    await api('posts',{method:'POST',body:JSON.stringify({
+      title,content,category:category||null,
+      author_id:currentUser,author_label:BREEDERS[currentUser]
+    })});
+    okEl.style.display='block';
+    document.getElementById('pTitle').value='';
+    document.getElementById('pContent').value='';
+    document.getElementById('pCategory').value='';
+    setTimeout(()=>okEl.style.display='none',2500);
+  }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
+}
+
+async function renderPostList(){
+  const el=document.getElementById('postAdminList');
+  el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
+  try{
+    const filter=currentUser===MASTER_ID?'posts?select=*&order=created_at.desc':`posts?select=*&author_id=eq.${currentUser}&order=created_at.desc`;
+    const posts=await api(filter,{});
+    if(!posts.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 게시글이 없습니다</p>';return;}
+    el.innerHTML=posts.map(p=>`
+      <div class="list-item">
+        <div class="list-item-info" style="min-width:0">
+          <p style="white-space:normal;font-size:13px">${p.title}</p>
+          <span>${p.author_label||''}${p.category?' · '+p.category:''}</span>
+        </div>
+        <div class="list-item-actions">
+          <button class="btn-danger" onclick="deletePost('${p.id}','${p.title.replace(/'/g,"\'")}')">삭제</button>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<p style="font-size:13px;color:#e00;padding:12px 0">오류: ${e.message}</p>`;}
+}
+
+async function deletePost(id,title){
+  if(!confirm(`"${title}" 게시글을 삭제하시겠습니까?`))return;
+  try{
+    await api(`posts?id=eq.${id}`,{method:'DELETE'});
+    renderPostList();
+  }catch(e){alert('삭제 실패: '+e.message);}
 }
 </script>
 </body>
