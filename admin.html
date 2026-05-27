@@ -162,8 +162,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="pane show" id="pane-hreg">
         <div id="hsaveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
         <div id="hsaveErr" class="msg-err" style="display:none"></div>
-        <div class="field"><label>부 (수컷 부모)</label><select id="hFather" onchange="updateHatchCode()"><option value="">선택</option></select></div>
-        <div class="field"><label>모 (암컷 부모)</label><select id="hMother" onchange="updateHatchCode()"><option value="">선택</option></select></div>
+        <div class="field"><label>부 (전체 브리더 수컷)</label><select id="hFather" onchange="updateHatchCode()"><option value="">선택</option></select></div>
+        <div class="field"><label>모 (전체 브리더 암컷) — 해칭 브리더 결정</label><select id="hMother" onchange="onMotherChange()"><option value="">선택</option></select></div>
+        <div class="field">
+          <label>해칭 브리더 (모 기준 자동)</label>
+          <div class="code-preview" id="hBreederPreview" style="font-size:13px;letter-spacing:0">—</div>
+        </div>
         <div class="field"><label>해칭일</label><input type="date" id="hDate" oninput="updateHatchCode()"></div>
         <div class="field"><label>클러치 번호</label><input type="number" id="hClutch" placeholder="예: 1" min="1" oninput="updateHatchCode()"></div>
         <div class="field"><label>자동 생성 코드</label><div class="code-preview" id="hCodePreview">—</div></div>
@@ -354,12 +358,32 @@ function pickMorph(name,el,type){
 async function loadAnimalsForSelect(){
   try{
     animals=await api('animals?select=*&order=name.asc');
-    const myAnimals=currentUser===MASTER_ID?animals:animals.filter(a=>a.owner_id===currentUser);
-    const fSel=document.getElementById('hFather');
-    const mSel=document.getElementById('hMother');
-    fSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='수컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
-    mSel.innerHTML='<option value="">선택</option>'+myAnimals.filter(a=>a.gender==='암컷'||!a.gender).map(a=>`<option value="${a.id}" data-code="${a.code||''}">${a.name}${a.code?' ('+a.code+')':''}</option>`).join('');
+    refreshHatchSelects();
   }catch(e){}
+}
+
+function refreshHatchSelects(){
+  const fSel=document.getElementById('hFather');
+  const mSel=document.getElementById('hMother');
+  // 전체 브리더 수컷만
+  const males=animals.filter(a=>a.gender==='수컷');
+  fSel.innerHTML='<option value="">선택</option>'+males.map(a=>`<option value="${a.id}" data-code="${a.code||''}" data-owner="${a.owner_id||''}" data-label="${a.owner_label||''}">${a.name}${a.code?' ('+a.code+')':''} · ${a.owner_label}</option>`).join('');
+  // 전체 브리더 암컷만
+  const females=animals.filter(a=>a.gender==='암컷');
+  mSel.innerHTML='<option value="">선택</option>'+females.map(a=>`<option value="${a.id}" data-code="${a.code||''}" data-owner="${a.owner_id||''}" data-label="${a.owner_label||''}">${a.name}${a.code?' ('+a.code+')':''} · ${a.owner_label}</option>`).join('');
+  updateHatchCode();
+}
+
+function onMotherChange(){
+  const mSel=document.getElementById('hMother');
+  const mOpt=mSel.options[mSel.selectedIndex];
+  const preview=document.getElementById('hBreederPreview');
+  if(mSel.value&&mOpt.dataset.label){
+    preview.textContent=mOpt.dataset.label;
+  } else {
+    preview.textContent='—';
+  }
+  updateHatchCode();
 }
 
 function updateHatchCode(){
@@ -369,7 +393,10 @@ function updateHatchCode(){
   const clutch=document.getElementById('hClutch').value;
   const fOpt=fSel.options[fSel.selectedIndex];
   const mOpt=mSel.options[mSel.selectedIndex];
-  const bc=BREEDER_CODE[currentUser]||'?';
+  const mSel2=document.getElementById('hMother');
+  const mOpt2=mSel2&&mSel2.selectedIndex>0?mSel2.options[mSel2.selectedIndex]:null;
+  const motherOwner=mOpt2?mOpt2.dataset.owner:null;
+  const bc=BREEDER_CODE[motherOwner]||'?';
   const fc=fOpt&&fOpt.dataset.code?fOpt.dataset.code:'?';
   const mc=mOpt&&mOpt.dataset.code?mOpt.dataset.code:'?';
   let code='—';
@@ -443,6 +470,9 @@ async function saveHatchling(){
   if(codeText==='—'){errEl.textContent='코드를 먼저 생성해주세요';errEl.style.display='block';return;}
   const father=animals.find(a=>a.id===fatherId);
   const mother=animals.find(a=>a.id===motherId);
+  // 해칭 브리더 = 모 기준
+  const hBreederId=mother?.owner_id||currentUser;
+  const hBreederLabel=mother?.owner_label||BREEDERS[currentUser];
   showUploading(true);
   try{
     await api('hatchlings',{method:'POST',body:JSON.stringify({
@@ -451,13 +481,14 @@ async function saveHatchling(){
       father_code:father?.code||null,mother_code:mother?.code||null,
       morph:hSelectedMorph||null,gender:gender||null,
       image_url:null,image_url_2:null,
-      owner_id:currentUser,owner_label:BREEDERS[currentUser],
+      owner_id:hBreederId,owner_label:hBreederLabel,
       hatch_date:dateVal,clutch_no:parseInt(clutch)
     })});
     okEl.style.display='block';
     document.getElementById('hFather').value='';document.getElementById('hMother').value='';
     document.getElementById('hDate').value='';document.getElementById('hClutch').value='';
     document.getElementById('hGender').value='';document.getElementById('hCodePreview').textContent='—';
+    document.getElementById('hBreederPreview').textContent='—';
     document.querySelectorAll('#hMorphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
     hSelectedMorph=null;
     setTimeout(()=>okEl.style.display='none',2500);
