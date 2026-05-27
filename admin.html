@@ -73,6 +73,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .visitor-box{background:#f5f5f5;border:1px solid #eee;padding:16px;margin-bottom:16px;text-align:center}
 .visitor-box .num{font-size:36px;font-weight:800;color:#000}
 .visitor-box .lbl{font-size:12px;color:#888;margin-top:4px}
+.editor-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border:1px solid #000;border-bottom:none;background:#f9f9f9}
+.etool{padding:5px 9px;font-size:12px;font-family:inherit;border:1px solid #ccc;background:#fff;cursor:pointer;color:#000;font-weight:600;border-radius:0}
+.etool:hover{background:#000;color:#fff;border-color:#000}
+.etool.sep{width:1px;background:#ddd;border:none;padding:0;margin:0 2px;cursor:default}
+.editor-body{min-height:250px;border:1px solid #000;padding:14px;font-size:14px;line-height:1.8;color:#000;outline:none;overflow-y:auto;background:#fff}
+.editor-body h1{font-size:22px;font-weight:800;margin:16px 0 8px}
+.editor-body h2{font-size:18px;font-weight:700;margin:14px 0 6px}
+.editor-body ul{padding-left:20px;margin:8px 0}
+.editor-body ol{padding-left:20px;margin:8px 0}
+.editor-body li{margin-bottom:4px}
+.editor-body a{color:#000;text-decoration:underline}
+.editor-body img{max-width:100%;margin:8px 0;display:block}
+.editor-body blockquote{border-left:3px solid #000;padding:8px 14px;margin:10px 0;color:#555;background:#f9f9f9}
 </style>
 </head>
 <body>
@@ -215,9 +228,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div class="field">
           <label>내용 *</label>
-          <textarea id="pContent" placeholder="내용을 입력하세요..." style="width:100%;height:200px;padding:11px 13px;font-size:14px;border:1px solid #000;background:#fff;color:#000;border-radius:0;font-family:inherit;outline:none;resize:vertical;line-height:1.6"></textarea>
+          <div class="editor-toolbar">
+            <button class="etool" onclick="fmt('bold')" title="볼드"><b>B</b></button>
+            <button class="etool" onclick="fmt('italic')" title="이탤릭"><i>I</i></button>
+            <button class="etool" onclick="fmt('underline')" title="밑줄"><u>U</u></button>
+            <div class="etool sep"></div>
+            <button class="etool" onclick="fmtBlock('h1')" title="제목1">H1</button>
+            <button class="etool" onclick="fmtBlock('h2')" title="제목2">H2</button>
+            <button class="etool" onclick="fmtBlock('p')" title="본문">P</button>
+            <div class="etool sep"></div>
+            <button class="etool" onclick="fmt('insertUnorderedList')" title="불릿목록">•—</button>
+            <button class="etool" onclick="fmt('insertOrderedList')" title="번호목록">1—</button>
+            <div class="etool sep"></div>
+            <button class="etool" onclick="insertLink()" title="링크">🔗</button>
+            <button class="etool" onclick="insertImg()" title="이미지">🖼</button>
+          </div>
+          <div id="pEditor" class="editor-body" contenteditable="true" spellcheck="false"></div>
         </div>
-        <button class="btn btn-primary" onclick="savePost()">등록하기</button>
+        <button class="btn btn-primary" onclick="savePost()" style="margin-top:4px">등록하기</button>
+        <input type="file" id="editorImgInput" accept="image/*" style="display:none" onchange="handleEditorImg(event)">
       </div>
       <div class="pane" id="pane-plist"><div id="postAdminList"></div></div>
     </div>
@@ -677,22 +706,44 @@ function switchPTab(tab){
   if(tab==='plist')renderPostList();
 }
 
+function fmt(cmd){document.execCommand(cmd,false,null);document.getElementById('pEditor').focus();}
+function fmtBlock(tag){document.execCommand('formatBlock',false,tag);document.getElementById('pEditor').focus();}
+function insertLink(){
+  const url=prompt('링크 URL:');
+  if(!url)return;
+  document.execCommand('createLink',false,url);
+  document.getElementById('pEditor').focus();
+}
+function insertImg(){document.getElementById('editorImgInput').click();}
+async function handleEditorImg(e){
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
+  showUploading(true);
+  try{
+    const ts=Date.now();
+    const url=await uploadToR2(file,`post_${currentUser}_${ts}.${file.name.split('.').pop()}`);
+    document.execCommand('insertHTML',false,`<img src="${url}" alt="이미지">`);
+    document.getElementById('pEditor').focus();
+  }catch(err){alert('이미지 업로드 실패: '+err.message);}
+  finally{showUploading(false);e.target.value='';}
+}
+
 async function savePost(){
   const title=document.getElementById('pTitle').value.trim();
-  const content=document.getElementById('pContent').value.trim();
+  const html=document.getElementById('pEditor').innerHTML.trim();
   const category=document.getElementById('pCategory').value;
   const okEl=document.getElementById('psaveOk'),errEl=document.getElementById('psaveErr');
   okEl.style.display='none';errEl.style.display='none';
   if(!title){errEl.textContent='제목을 입력해주세요';errEl.style.display='block';return;}
-  if(!content){errEl.textContent='내용을 입력해주세요';errEl.style.display='block';return;}
+  if(!html||html==='<br>'){errEl.textContent='내용을 입력해주세요';errEl.style.display='block';return;}
   try{
     await api('posts',{method:'POST',body:JSON.stringify({
-      title,content,category:category||null,
+      title,content:html,category:category||null,
       author_id:currentUser,author_label:BREEDERS[currentUser]
     })});
     okEl.style.display='block';
     document.getElementById('pTitle').value='';
-    document.getElementById('pContent').value='';
+    document.getElementById('pEditor').innerHTML='';
     document.getElementById('pCategory').value='';
     setTimeout(()=>okEl.style.display='none',2500);
   }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
