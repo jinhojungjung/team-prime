@@ -12,8 +12,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tp-header-left{display:flex;align-items:center;gap:10px}
 .tp-logo{font-size:18px;font-weight:700;letter-spacing:0.08em;color:#000}
 .tp-sub{font-size:11px;color:#666;margin-top:2px;letter-spacing:0.04em}
-.visitor-count{font-size:11px;color:#aaa;letter-spacing:0.04em;text-align:right}
+.visitor-count{font-size:11px;color:#aaa;text-align:right}
 .visitor-count span{font-weight:700;color:#888}
+/* MAIN TABS */
+.main-tabs{display:flex;border-bottom:2px solid #000;background:#fff}
+.main-tab{flex:1;padding:12px 4px;font-size:13px;text-align:center;cursor:pointer;background:#fff;border:none;color:#888;font-family:inherit;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.15s}
+.main-tab.active{color:#000;font-weight:800;border-bottom-color:#000}
+/* SEARCH */
 .search-wrap{padding:12px 16px 0;background:#fff}
 .search-box{display:flex;align-items:center;gap:10px;border:1px solid #000;padding:10px 14px;background:#fff}
 .search-box input{border:none;background:transparent;flex:1;font-size:15px;color:#000;outline:none;font-family:inherit}
@@ -25,20 +30,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .filter-row::-webkit-scrollbar{display:none}
 .filter-chip{flex-shrink:0;font-size:11px;padding:4px 10px;border:1px solid #ddd;color:#888;background:#fff;cursor:pointer;white-space:nowrap;font-family:inherit;border-radius:0;font-weight:500;transition:all 0.1s}
 .filter-chip.active{background:#000;color:#fff;border-color:#000;font-weight:700}
-.filter-divider{width:1px;height:20px;background:#eee;flex-shrink:0;align-self:center}
 /* RESULTS */
 .results{padding:0 16px 40px;background:#fff;flex:1;margin-top:10px}
 .result-label{font-size:11px;color:#888;margin-bottom:10px;letter-spacing:0.06em;text-transform:uppercase;padding-top:4px}
-.section-label{font-size:11px;color:#888;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;padding:14px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px}
 .empty{text-align:center;padding:60px 16px;color:#ccc;font-size:14px}
 .empty-icon{font-size:40px;display:block;margin-bottom:12px}
+/* CARDS */
 .animal-card{border:1px solid #000;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer;background:#fff;position:relative;transition:background 0.1s}
 .animal-card:active{background:#f7f7f7}
 .animal-thumb{width:64px;height:64px;flex-shrink:0;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:28px}
 .animal-thumb img{width:100%;height:100%;object-fit:cover}
 .animal-info{min-width:0;flex:1}
 .animal-info h3{font-size:14px;font-weight:700;color:#000;letter-spacing:0.02em}
-.badge-row{display:flex;gap:5px;margin-top:6px;flex-wrap:nowrap;align-items:center;overflow:hidden}
+.animal-info .code-text{font-size:10px;color:#aaa;letter-spacing:0.06em;margin-top:1px;font-family:monospace}
+.badge-row{display:flex;gap:5px;margin-top:5px;flex-wrap:nowrap;align-items:center;overflow:hidden}
 .badge{font-size:10px;padding:2px 7px;border:1px solid #000;color:#000;letter-spacing:0.02em;font-weight:600;white-space:nowrap;flex-shrink:0;line-height:1.7;word-break:keep-all}
 .badge.owner{background:#000;color:#fff}
 .badge.gender-m{background:#e8f0fe;border-color:#4a7cf7;color:#2a5cd4}
@@ -60,9 +65,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .photo-nav.prev{left:6px}
 .photo-nav.next{right:6px}
 .detail-name{font-size:22px;font-weight:700;margin-top:14px;color:#000}
+.detail-code{font-size:11px;color:#aaa;letter-spacing:0.08em;font-family:monospace;margin-top:3px}
 .detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee;font-size:14px}
 .detail-row span:first-child{color:#888}
 .detail-row span:last-child{color:#000;font-weight:600}
+.parent-link{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:14px;cursor:pointer}
+.parent-link:hover .parent-name{text-decoration:underline}
+.parent-name{color:#000;font-weight:600}
+.parent-arrow{color:#aaa;font-size:12px}
 .close-btn{width:100%;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;border-radius:0;font-weight:600;margin-top:16px;background:#fff;border:1px solid #000;color:#000}
 .loading{text-align:center;padding:40px;color:#bbb;font-size:13px}
 </style>
@@ -74,25 +84,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <span style="font-size:28px;line-height:1;flex-shrink:0">🦎</span>
       <div>
         <div class="tp-logo">TEAM.PRIME</div>
-        <div class="tp-sub">부모 개체 검색</div>
+        <div class="tp-sub">개체 검색</div>
       </div>
     </div>
     <div class="visitor-count">방문자<br><span id="visitorNum">-</span></div>
   </div>
-  <div class="search-wrap">
-    <div class="search-box">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="개체 이름 또는 모프 검색" oninput="doSearch()" autocomplete="off" autocorrect="off" spellcheck="false">
+
+  <div class="main-tabs">
+    <button class="main-tab active" id="mtab-parents" onclick="switchMainTab('parents')">🦎 부모 개체</button>
+    <button class="main-tab" id="mtab-hatchlings" onclick="switchMainTab('hatchlings')">🥚 해칭 개체</button>
+  </div>
+
+  <div id="section-parents">
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="이름, 모프, 코드 검색" oninput="doSearch()" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
     </div>
+    <div class="filter-section">
+      <div class="filter-label">브리더</div>
+      <div class="filter-row" id="breederFilters"></div>
+      <div class="filter-label" style="margin-top:6px">모프</div>
+      <div class="filter-row" id="morphFilters"></div>
+    </div>
+    <div class="results" id="results"><div class="loading">불러오는 중...</div></div>
   </div>
-  <div class="filter-section">
-    <div class="filter-label">브리더</div>
-    <div class="filter-row" id="breederFilters"></div>
-    <div class="filter-label" style="margin-top:6px">모프</div>
-    <div class="filter-row" id="morphFilters"></div>
-  </div>
-  <div class="results" id="results">
-    <div class="loading">불러오는 중...</div>
+
+  <div id="section-hatchlings" style="display:none">
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="hSearchInput" placeholder="코드, 모프, 부모 이름 검색" oninput="doHSearch()" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-label">브리더</div>
+      <div class="filter-row" id="hBreederFilters"></div>
+      <div class="filter-label" style="margin-top:6px">모프</div>
+      <div class="filter-row" id="hMorphFilters"></div>
+    </div>
+    <div class="results" id="hResults"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
 
@@ -101,142 +133,135 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-const SUPABASE_URL = 'https://yoiytrwuojrgvjwsywlt.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
-const MASTER = '마이크레소프트';
-const PINNED_ORDER = ['링스','루멘','마블','쿠키'];
+const SUPABASE_URL='https://yoiytrwuojrgvjwsywlt.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
+const MASTER='마이크레소프트';
+const PINNED_ORDER=['링스','루멘','마블','쿠키','치즈케익'];
+const BREEDER_ORDER=['마이크레소프트','슈프림크레','모프스튜디오','게코오엑스','크레밍'];
 
-let animals = [];
-let _found = [];
-let activeBreeder = '전체';
-let activeMorph = '전체';
+let animals=[],hatchlings=[];
+let _found=[],_hFound=[];
+let activeBreeder='전체',activeMorph='전체';
+let hActiveBreeder='전체',hActiveMorph='전체';
+let currentTab='parents';
 
-async function api(path, opts={}) {
-  const res = await fetch(SUPABASE_URL+'/rest/v1/'+path, {
+async function api(path,opts={}){
+  const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,{
     headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',...(opts.headers||{})},
     ...opts
   });
-  if (!res.ok) throw new Error(await res.text());
-  const t = await res.text();
-  return t ? JSON.parse(t) : null;
+  if(!res.ok)throw new Error(await res.text());
+  const t=await res.text();
+  return t?JSON.parse(t):null;
 }
 
-async function incrementVisitor() {
-  try {
-    // 현재 카운트 가져오기
-    const r = await api('visitor_count?id=eq.1');
-    const cur = r && r[0] ? r[0].count : 0;
-    await api('visitor_count?id=eq.1', {
-      method:'PATCH',
-      headers:{'Prefer':'return=minimal'},
-      body: JSON.stringify({count: cur+1})
-    });
-    document.getElementById('visitorNum').textContent = (cur+1).toLocaleString();
-  } catch(e) {}
+async function incrementVisitor(){
+  try{
+    const r=await api('visitor_count?id=eq.1');
+    const cur=r&&r[0]?r[0].count:0;
+    await api('visitor_count?id=eq.1',{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({count:cur+1})});
+    document.getElementById('visitorNum').textContent=(cur+1).toLocaleString();
+  }catch(e){}
 }
 
-async function loadVisitor() {
-  try {
-    const r = await api('visitor_count?id=eq.1');
-    if (r && r[0]) document.getElementById('visitorNum').textContent = r[0].count.toLocaleString();
-  } catch(e) {}
+async function loadVisitor(){
+  try{
+    const r=await api('visitor_count?id=eq.1');
+    if(r&&r[0])document.getElementById('visitorNum').textContent=r[0].count.toLocaleString();
+  }catch(e){}
 }
 
-async function loadAnimals() {
-  try {
-    animals = await api('animals?select=*&order=created_at.asc');
+async function loadAll(){
+  try{
+    animals=await api('animals?select=*&order=created_at.asc');
     buildFilters();
     renderMain();
-  } catch(e) {
-    document.getElementById('results').innerHTML = `<div class="empty"><span class="empty-icon">⚠️</span>불러오기 실패</div>`;
-  }
+  }catch(e){document.getElementById('results').innerHTML='<div class="empty"><span class="empty-icon">⚠️</span>불러오기 실패</div>';}
+  try{
+    hatchlings=await api('hatchlings?select=*&order=created_at.asc');
+    buildHFilters();
+    renderHMain();
+  }catch(e){document.getElementById('hResults').innerHTML='<div class="empty"><span class="empty-icon">⚠️</span>불러오기 실패</div>';}
 }
 
-function buildFilters() {
-  // 브리더 순서 고정: 마이크레소프트 항상 첫번째
-  const BREEDER_ORDER = ['마이크레소프트','슈프림크레','모프스튜디오','게코오엑스','크레밍'];
-  const existingBreeders = new Set(animals.map(a => a.owner_label).filter(Boolean));
-  const breeders = ['전체', ...BREEDER_ORDER.filter(b => existingBreeders.has(b)),
-    ...[...existingBreeders].filter(b => !BREEDER_ORDER.includes(b))];
-  const morphs = ['전체', ...new Set(animals.map(a => a.morph).filter(Boolean))];
+function switchMainTab(tab){
+  currentTab=tab;
+  document.getElementById('section-parents').style.display=tab==='parents'?'block':'none';
+  document.getElementById('section-hatchlings').style.display=tab==='hatchlings'?'block':'none';
+  document.getElementById('mtab-parents').classList.toggle('active',tab==='parents');
+  document.getElementById('mtab-hatchlings').classList.toggle('active',tab==='hatchlings');
+}
 
-  document.getElementById('breederFilters').innerHTML = breeders.map(b => {
-    const label = b === '마이크레소프트' ? `👑 ${b}` : b;
+/* ── 부모 개체 ── */
+function buildFilters(){
+  const existing=new Set(animals.map(a=>a.owner_label).filter(Boolean));
+  const breeders=['전체',...BREEDER_ORDER.filter(b=>existing.has(b)),...[...existing].filter(b=>!BREEDER_ORDER.includes(b))];
+  const morphs=['전체',...new Set(animals.map(a=>a.morph).filter(Boolean))];
+  document.getElementById('breederFilters').innerHTML=breeders.map(b=>{
+    const label=b==='마이크레소프트'?`👑 ${b}`:b;
     return `<button class="filter-chip${b===activeBreeder?' active':''}" onclick="setBreeder('${b}')">${label}</button>`;
   }).join('');
-
-  document.getElementById('morphFilters').innerHTML = morphs.map(m =>
+  document.getElementById('morphFilters').innerHTML=morphs.map(m=>
     `<button class="filter-chip${m===activeMorph?' active':''}" onclick="setMorph('${m}')">${m}</button>`
   ).join('');
 }
 
-function setBreeder(b) {
-  activeBreeder = b;
-  buildFilters();
-  const q = document.getElementById('searchInput').value.trim();
-  if (q) doSearch(); else renderMain();
-}
+function setBreeder(b){activeBreeder=b;buildFilters();const q=document.getElementById('searchInput').value.trim();if(q)doSearch();else renderMain();}
+function setMorph(m){activeMorph=m;buildFilters();const q=document.getElementById('searchInput').value.trim();if(q)doSearch();else renderMain();}
 
-function setMorph(m) {
-  activeMorph = m;
-  buildFilters();
-  const q = document.getElementById('searchInput').value.trim();
-  if (q) doSearch(); else renderMain();
-}
-
-function applyFilters(list) {
-  return list.filter(a => {
-    const bOk = activeBreeder === '전체' || a.owner_label === activeBreeder;
-    const mOk = activeMorph === '전체' || a.morph === activeMorph;
-    return bOk && mOk;
+function applyFilters(list){
+  return list.filter(a=>{
+    const bOk=activeBreeder==='전체'||a.owner_label===activeBreeder;
+    const mOk=activeMorph==='전체'||a.morph===activeMorph;
+    return bOk&&mOk;
   });
 }
 
-function sortByPinned(list) {
-  const pinned = PINNED_ORDER.map(n => list.find(a => a.name===n)).filter(Boolean);
-  const rest = list.filter(a => !PINNED_ORDER.includes(a.name));
-  return [...pinned, ...rest];
+function sortByPinned(list){
+  const pinned=PINNED_ORDER.map(n=>list.find(a=>a.name===n)).filter(Boolean);
+  const rest=list.filter(a=>!PINNED_ORDER.includes(a.name));
+  return [...pinned,...rest];
 }
 
-function renderMain() {
-  const el = document.getElementById('results');
-  const filtered = applyFilters(animals);
-  if (!filtered.length) {
-    el.innerHTML = '<div class="empty"><span class="empty-icon">🦎</span>해당하는 개체가 없습니다</div>';
-    return;
-  }
-  const sorted = sortByPinned(filtered);
-  const pinned = sorted.filter(a => PINNED_ORDER.includes(a.name));
-  const rest = sorted.filter(a => !PINNED_ORDER.includes(a.name));
-  _found = sorted;
-  let html = '';
-  if (pinned.length) {
-    html += `<div class="section-label">추천 개체</div>`;
-    html += pinned.map((a,i) => cardHtml(a, sorted.indexOf(a))).join('');
-  }
-  if (rest.length) {
-    html += `<div class="section-label" style="margin-top:${pinned.length?'8px':'0'}">전체 개체</div>`;
-    html += rest.map((a) => cardHtml(a, sorted.indexOf(a))).join('');
-  }
-  el.innerHTML = html;
+function renderMain(){
+  const el=document.getElementById('results');
+  const filtered=applyFilters(animals);
+  if(!filtered.length){el.innerHTML='<div class="empty"><span class="empty-icon">🦎</span>해당하는 개체가 없습니다</div>';return;}
+  const sorted=sortByPinned(filtered);
+  _found=sorted;
+  el.innerHTML=sorted.map((a,i)=>parentCardHtml(a,i)).join('');
 }
 
-function genderBadge(g) {
-  if (!g) return '';
-  if (g==='수컷') return `<span class="badge gender-m">♂ 수컷</span>`;
-  if (g==='암컷') return `<span class="badge gender-f">♀ 암컷</span>`;
+function doSearch(){
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  const el=document.getElementById('results');
+  if(!q){renderMain();return;}
+  const found=applyFilters(animals).filter(a=>
+    a.name.toLowerCase().includes(q)||(a.morph&&a.morph.toLowerCase().includes(q))||(a.code&&a.code.toLowerCase().includes(q))
+  );
+  _found=found;
+  if(!found.length){el.innerHTML='<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>';return;}
+  el.innerHTML=`<div class="result-label">${found.length}마리 검색됨</div>`+found.map((a,i)=>parentCardHtml(a,i)).join('');
+}
+
+function genderBadge(g){
+  if(!g)return '';
+  if(g==='수컷')return `<span class="badge gender-m">♂ 수컷</span>`;
+  if(g==='암컷')return `<span class="badge gender-f">♀ 암컷</span>`;
   return `<span class="badge">${g}</span>`;
 }
 
-function cardHtml(a, idx) {
-  const isMine = a.owner_label === MASTER;
-  const thumb = a.image_url ? `<img src="${a.image_url}" alt="${a.name}">` : `<span style="font-size:28px">🦎</span>`;
-  const morphBadge = a.morph ? `<span class="badge">${a.morph}</span>` : '';
-  const pip = isMine ? `<span class="mycre-pip">👑</span>` : '';
-  return `<div class="animal-card" onclick="openDetail(${idx})">
+function parentCardHtml(a,idx){
+  const isMine=a.owner_label===MASTER;
+  const thumb=a.image_url?`<img src="${a.image_url}" alt="${a.name}">`:`<span style="font-size:28px">🦎</span>`;
+  const morphBadge=a.morph?`<span class="badge">${a.morph}</span>`:'';
+  const pip=isMine?`<span class="mycre-pip">👑</span>`:'';
+  const codeEl=a.code?`<div class="code-text">${a.code}</div>`:'';
+  return `<div class="animal-card" onclick="openParentDetail(${idx})">
     <div class="animal-thumb">${thumb}</div>
     <div class="animal-info">
       <h3>${a.name}</h3>
+      ${codeEl}
       <div class="badge-row">
         <span class="badge owner">${a.owner_label}</span>
         ${morphBadge}
@@ -246,53 +271,153 @@ function cardHtml(a, idx) {
   </div>`;
 }
 
-function doSearch() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  const el = document.getElementById('results');
-  if (!q) { renderMain(); return; }
-  const found = applyFilters(animals).filter(a =>
-    a.name.toLowerCase().includes(q) || (a.morph && a.morph.toLowerCase().includes(q))
-  );
-  _found = found;
-  if (!found.length) { el.innerHTML='<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>'; return; }
-  el.innerHTML = `<div class="result-label">${found.length}마리 검색됨</div>` +
-    found.map((a,i) => cardHtml(a,i)).join('');
-}
-
-let _slideIdx = 0;
-function openDetail(i) {
-  const a = _found[i];
-  const photos = [a.image_url, a.image_url_2].filter(Boolean);
-  _slideIdx = 0;
-  let heroHtml = '';
-  if (!photos.length) {
-    heroHtml = `<div class="photo-slider" style="display:flex;align-items:center;justify-content:center;font-size:72px">🦎</div>`;
-  } else if (photos.length===1) {
-    heroHtml = `<div class="photo-slider"><img src="${photos[0]}" alt="사진"></div>`;
-  } else {
-    heroHtml = `<div class="photo-slider" id="slider">
-      <img src="${photos[0]}" id="slide0" alt="사진1">
-      <img src="${photos[1]}" id="slide1" alt="사진2" class="hidden">
-      <button class="photo-nav prev" onclick="slide(-1)">&#8249;</button>
-      <button class="photo-nav next" onclick="slide(1)">&#8250;</button>
-      <div class="photo-dots">
-        <div class="photo-dot active" id="dot0" onclick="goSlide(0)"></div>
-        <div class="photo-dot" id="dot1" onclick="goSlide(1)"></div>
-      </div>
-    </div>`;
-  }
-  document.getElementById('detailContent').innerHTML = `
-    ${heroHtml}
+let _slideIdx=0;
+function openParentDetail(i){
+  const a=_found[i];
+  const photos=[a.image_url,a.image_url_2].filter(Boolean);
+  _slideIdx=0;
+  // 이 부모가 낳은 해칭 개체
+  const children=hatchlings.filter(h=>h.father_id===a.id||h.mother_id===a.id);
+  const childrenHtml=children.length
+    ?`<div style="margin-top:14px"><div style="font-size:11px;color:#aaa;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;margin-bottom:6px">해칭 개체 (${children.length})</div>`+
+      children.map(h=>`<div class="parent-link" onclick="closeDetail();setTimeout(()=>{switchMainTab('hatchlings');openHatchDetail('${h.id}')},200)">
+        <span class="parent-name" style="font-family:monospace;font-size:13px">${h.code}</span>
+        <span class="parent-arrow">▶</span>
+      </div>`).join('')+`</div>`
+    :'';
+  document.getElementById('detailContent').innerHTML=heroHtml(photos)+`
     <div class="modal-inner">
       <div class="detail-name">${a.name}</div>
+      ${a.code?`<div class="detail-code">${a.code}</div>`:''}
       <div style="margin-top:10px">
         ${a.gender?`<div class="detail-row"><span>성별</span><span>${a.gender}</span></div>`:''}
         ${a.morph?`<div class="detail-row"><span>모프</span><span>${a.morph}</span></div>`:''}
         <div class="detail-row"><span>브리더</span><span>${a.owner_label}</span></div>
       </div>
+      ${childrenHtml}
       <button class="close-btn" onclick="closeDetail()">닫기</button>
     </div>`;
   document.getElementById('detailModal').classList.add('open');
+}
+
+/* ── 해칭 개체 ── */
+function buildHFilters(){
+  const existing=new Set(hatchlings.map(h=>h.owner_label).filter(Boolean));
+  const breeders=['전체',...BREEDER_ORDER.filter(b=>existing.has(b)),...[...existing].filter(b=>!BREEDER_ORDER.includes(b))];
+  const morphs=['전체',...new Set(hatchlings.map(h=>h.morph).filter(Boolean))];
+  document.getElementById('hBreederFilters').innerHTML=breeders.map(b=>{
+    const label=b==='마이크레소프트'?`👑 ${b}`:b;
+    return `<button class="filter-chip${b===hActiveBreeder?' active':''}" onclick="setHBreeder('${b}')">${label}</button>`;
+  }).join('');
+  document.getElementById('hMorphFilters').innerHTML=morphs.map(m=>
+    `<button class="filter-chip${m===hActiveMorph?' active':''}" onclick="setHMorph('${m}')">${m}</button>`
+  ).join('');
+}
+
+function setHBreeder(b){hActiveBreeder=b;buildHFilters();const q=document.getElementById('hSearchInput').value.trim();if(q)doHSearch();else renderHMain();}
+function setHMorph(m){hActiveMorph=m;buildHFilters();const q=document.getElementById('hSearchInput').value.trim();if(q)doHSearch();else renderHMain();}
+
+function applyHFilters(list){
+  return list.filter(h=>{
+    const bOk=hActiveBreeder==='전체'||h.owner_label===hActiveBreeder;
+    const mOk=hActiveMorph==='전체'||h.morph===hActiveMorph;
+    return bOk&&mOk;
+  });
+}
+
+function renderHMain(){
+  const el=document.getElementById('hResults');
+  const filtered=applyHFilters(hatchlings);
+  if(!filtered.length){el.innerHTML='<div class="empty"><span class="empty-icon">🥚</span>등록된 해칭 개체가 없습니다</div>';return;}
+  _hFound=filtered;
+  el.innerHTML=filtered.map((h,i)=>hatchlingCardHtml(h,i)).join('');
+}
+
+function doHSearch(){
+  const q=document.getElementById('hSearchInput').value.trim().toLowerCase();
+  const el=document.getElementById('hResults');
+  if(!q){renderHMain();return;}
+  const found=applyHFilters(hatchlings).filter(h=>{
+    const father=animals.find(a=>a.id===h.father_id);
+    const mother=animals.find(a=>a.id===h.mother_id);
+    return h.code.toLowerCase().includes(q)||
+      (h.morph&&h.morph.toLowerCase().includes(q))||
+      (father&&father.name.toLowerCase().includes(q))||
+      (mother&&mother.name.toLowerCase().includes(q));
+  });
+  _hFound=found;
+  if(!found.length){el.innerHTML='<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>';return;}
+  el.innerHTML=`<div class="result-label">${found.length}마리 검색됨</div>`+found.map((h,i)=>hatchlingCardHtml(h,i)).join('');
+}
+
+function hatchlingCardHtml(h,idx){
+  const isMine=h.owner_label===MASTER;
+  const thumb=h.image_url?`<img src="${h.image_url}" alt="${h.code}">`:`<span style="font-size:28px">🥚</span>`;
+  const morphBadge=h.morph?`<span class="badge">${h.morph}</span>`:'';
+  const pip=isMine?`<span class="mycre-pip">👑</span>`:'';
+  const father=animals.find(a=>a.id===h.father_id);
+  const mother=animals.find(a=>a.id===h.mother_id);
+  const parentText=father&&mother?`${father.name} × ${mother.name}`:father?father.name:mother?mother.name:'';
+  return `<div class="animal-card" onclick="openHatchDetail('${h.id}')">
+    <div class="animal-thumb">${thumb}</div>
+    <div class="animal-info">
+      <div class="code-text">${h.code}</div>
+      <h3 style="margin-top:2px">${h.morph||'모프 미확인'}</h3>
+      ${parentText?`<div style="font-size:11px;color:#aaa;margin-top:2px">${parentText}</div>`:''}
+      <div class="badge-row">
+        <span class="badge owner">${h.owner_label}</span>
+        ${morphBadge}
+        ${genderBadge(h.gender)}
+      </div>
+    </div>${pip}
+  </div>`;
+}
+
+function openHatchDetail(id){
+  const h=hatchlings.find(x=>x.id===id);if(!h)return;
+  const photos=[h.image_url,h.image_url_2].filter(Boolean);
+  const father=animals.find(a=>a.id===h.father_id);
+  const mother=animals.find(a=>a.id===h.mother_id);
+  const fatherIdx=father?_found.indexOf(father):-1;
+  const motherIdx=mother?_found.indexOf(mother):-1;
+  const fatherHtml=father?`<div class="parent-link" onclick="closeDetail();setTimeout(()=>{switchMainTab('parents');openParentDetail(${animals.indexOf(father)})},200)">
+    <span><span style="color:#aaa;font-size:11px">부 · </span><span class="parent-name">${father.name}</span> <span style="font-size:10px;color:#aaa;font-family:monospace">${father.code||''}</span></span>
+    <span class="parent-arrow">▶</span>
+  </div>`:'';
+  const motherHtml=mother?`<div class="parent-link" onclick="closeDetail();setTimeout(()=>{switchMainTab('parents');openParentDetail(${animals.indexOf(mother)})},200)">
+    <span><span style="color:#aaa;font-size:11px">모 · </span><span class="parent-name">${mother.name}</span> <span style="font-size:10px;color:#aaa;font-family:monospace">${mother.code||''}</span></span>
+    <span class="parent-arrow">▶</span>
+  </div>`:'';
+  const hatchDate=h.hatch_date?new Date(h.hatch_date).toLocaleDateString('ko-KR'):'';
+  document.getElementById('detailContent').innerHTML=heroHtml(photos)+`
+    <div class="modal-inner">
+      <div class="detail-code" style="font-size:13px;font-weight:700;color:#000;font-family:monospace">${h.code}</div>
+      <div class="detail-name" style="font-size:18px;margin-top:6px">${h.morph||'모프 미확인'}</div>
+      <div style="margin-top:10px">
+        ${h.gender?`<div class="detail-row"><span>성별</span><span>${h.gender}</span></div>`:''}
+        ${hatchDate?`<div class="detail-row"><span>해칭일</span><span>${hatchDate}</span></div>`:''}
+        ${h.clutch_no?`<div class="detail-row"><span>클러치</span><span>${h.clutch_no}번</span></div>`:''}
+        <div class="detail-row"><span>브리더</span><span>${h.owner_label}</span></div>
+      </div>
+      ${fatherHtml||motherHtml?`<div style="margin-top:14px"><div style="font-size:11px;color:#aaa;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;margin-bottom:6px">부모 개체</div>${fatherHtml}${motherHtml}</div>`:''}
+      <button class="close-btn" onclick="closeDetail()">닫기</button>
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function heroHtml(photos){
+  if(!photos.length)return `<div class="photo-slider" style="display:flex;align-items:center;justify-content:center;font-size:72px">🦎</div>`;
+  if(photos.length===1)return `<div class="photo-slider"><img src="${photos[0]}" alt="사진"></div>`;
+  return `<div class="photo-slider" id="slider">
+    <img src="${photos[0]}" id="slide0" alt="사진1">
+    <img src="${photos[1]}" id="slide1" alt="사진2" class="hidden">
+    <button class="photo-nav prev" onclick="slide(-1)">&#8249;</button>
+    <button class="photo-nav next" onclick="slide(1)">&#8250;</button>
+    <div class="photo-dots">
+      <div class="photo-dot active" id="dot0" onclick="goSlide(0)"></div>
+      <div class="photo-dot" id="dot1" onclick="goSlide(1)"></div>
+    </div>
+  </div>`;
 }
 
 function slide(dir){goSlide(_slideIdx+dir);}
@@ -305,14 +430,11 @@ function goSlide(idx){
 }
 function closeDetail(){document.getElementById('detailModal').classList.remove('open');}
 
-// 방문자 중복 방지 (세션당 1회)
-if (!sessionStorage.getItem('tp_visited')) {
+if(!sessionStorage.getItem('tp_visited')){
   sessionStorage.setItem('tp_visited','1');
   incrementVisitor();
-} else {
-  loadVisitor();
-}
-loadAnimals();
+}else{loadVisitor();}
+loadAll();
 </script>
 </body>
 </html>
