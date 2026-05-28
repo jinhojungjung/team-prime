@@ -35,12 +35,13 @@ const SB='https://yoiytrwuojrgvjwsywlt.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
 
 let allAnimals=[], allHatchlings=[];
+let animalMap = new Map(), hatchlingMap = new Map();
 
 const NW=148, NH=60;
 const PAD=16;
 const HGAP=12;
 const VGAP=70;
-const COUPLE_GAP=40; // 커플 블록 간 수직 간격
+const COUPLE_GAP=40;
 
 async function get(path){
   const r=await fetch(SB+'/rest/v1/'+path,{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
@@ -51,36 +52,36 @@ async function init(){
   const p=new URLSearchParams(location.search);
   const focusId=p.get('id');
   const focusType=p.get('type')||'parent';
+  
   const [a,h]=await Promise.all([
     get('animals?select=id,name,code,morph,gender,owner_label&order=name.asc'),
     get('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date&order=hatch_date.asc')
   ]);
   allAnimals=a; allHatchlings=h;
+  
+  // 빠른 매핑을 위한 해시화 복잡도 감소 O(N)
+  allAnimals.forEach(x => animalMap.set(x.id, x));
+  allHatchlings.forEach(x => hatchlingMap.set(x.id, x));
+  
   if(!focusId){ mount('<div class="empty">개체 정보가 없습니다</div>'); return; }
+  
   if(focusType==='parent'){
-    const focus=allAnimals.find(x=>x.id===focusId);
+    const focus=animalMap.get(focusId);
     if(!focus){ mount('<div class="empty">개체를 찾을 수 없습니다</div>'); return; }
     document.getElementById('headerTitle').textContent=focus.name;
     drawParentTree(focus);
   } else {
-    const focus=allHatchlings.find(x=>x.id===focusId);
+    const focus=hatchlingMap.get(focusId);
     if(!focus){ mount('<div class="empty">개체를 찾을 수 없습니다</div>'); return; }
     document.getElementById('headerTitle').textContent=focus.code;
     drawHatchTree(focus);
   }
 }
 
-// ── 부모 개체 기준 ────────────────────────────────
-// 커플별로 세로로 쌓기
-// 각 커플 블록:
-//   [파트너] ─── [기준(복사)]
-//                    │
-//              해칭1, 해칭2, ...
 function drawParentTree(focus){
   const myKids=allHatchlings.filter(h=>h.father_id===focus.id||h.mother_id===focus.id);
-
-  // 커플 그룹핑
   const coupleMap={};
+  
   myKids.forEach(h=>{
     const pid=h.father_id===focus.id?h.mother_id:h.father_id;
     const key=pid||'__none__';
@@ -89,7 +90,6 @@ function drawParentTree(focus){
   });
   const couples=Object.values(coupleMap);
 
-  // 해칭 없으면 단독
   if(!couples.length){
     const svgW=NW+PAD*2;
     const svgH=NH+PAD*2;
@@ -98,59 +98,44 @@ function drawParentTree(focus){
     mount(svg); return;
   }
 
-  // 각 커플 블록 높이 계산
-  // 블록 = 위행(NH) + VGAP + 아래행(NH 해칭들)  or 해칭없으면 위행만
   const blockHeights=couples.map(c=>c.kids.length>0?NH+VGAP+NH:NH);
-
-  // SVG 전체 높이
   const totalH=PAD+blockHeights.reduce((a,b)=>a+b,0)+COUPLE_GAP*(couples.length-1)+PAD;
-
-  // SVG 너비: 파트너 + 간격 + 기준 or 해칭들 중 큰 것
   const maxKidsW=Math.max(...couples.map(c=>c.kids.length*(NW+HGAP)-HGAP));
   const svgW=Math.max(NW*2+HGAP*4, maxKidsW)+PAD*2;
 
   const svg=mkSVG(svgW, totalH);
-
-  // 커플별 블록 그리기
   let curY=PAD;
+  
   couples.forEach((couple,ci)=>{
-    const partner=couple.pid?allAnimals.find(a=>a.id===couple.pid):null;
+    const partner=couple.pid?animalMap.get(couple.pid):null;
     const blockH=blockHeights[ci];
     const rowY=curY;
     const kidsY=rowY+NH+VGAP;
 
-    // 파트너 + 기준 가로 배치
-    // 기준은 오른쪽, 파트너는 왼쪽
     const focusX=svgW-PAD-NW;
     const focusCX=focusX+NW/2;
     const partnerX=PAD;
     const partnerCX=partnerX+NW/2;
 
-    // 기준 개체 (매 커플마다)
     addNode(svg, focusX, rowY, focus, 'parent', true);
 
     if(partner){
       addNode(svg, partnerX, rowY, partner, 'parent', false);
-      // 파트너 ─── 기준 연결선 (수평 점선)
       const lineY=rowY+NH/2;
       addLine(svg, partnerX+NW, lineY, focusX, lineY, true);
-      // 중점에서 아래로
       const midX=(partnerCX+focusCX)/2;
       if(couple.kids.length>0){
         addLine(svg, midX, lineY, midX, kidsY, false);
         drawKids(svg, couple.kids, midX, kidsY);
       }
     } else {
-      // 파트너 없음 → 기준에서 바로 아래
       if(couple.kids.length>0){
         addLine(svg, focusCX, rowY+NH, focusCX, kidsY, false);
         drawKids(svg, couple.kids, focusCX, kidsY);
       }
     }
-
     curY+=blockH+COUPLE_GAP;
 
-    // 커플 구분선 (마지막 제외)
     if(ci<couples.length-1){
       const divY=curY-COUPLE_GAP/2;
       const div=document.createElementNS('http://www.w3.org/2000/svg','line');
@@ -161,7 +146,6 @@ function drawParentTree(focus){
       svg.appendChild(div);
     }
   });
-
   mount(svg);
 }
 
@@ -171,19 +155,15 @@ function drawKids(svg, kids, midX, kidsY){
   kids.forEach((h,i)=>{
     const kx=kidsStartX+i*(NW+HGAP);
     addNode(svg, kx, kidsY, h, 'hatch', false);
-    if(kids.length===1){
-      // 직선
-    } else {
-      // 엘보우
+    if(kids.length>1){
       addElbow(svg, midX, kidsY, kx+NW/2, kidsY);
     }
   });
 }
 
-// ── 해칭 기준 ─────────────────────────────────────
 function drawHatchTree(focus){
-  const father=allAnimals.find(a=>a.id===focus.father_id);
-  const mother=allAnimals.find(a=>a.id===focus.mother_id);
+  const father=animalMap.get(focus.father_id);
+  const mother=animalMap.get(focus.mother_id);
   const kids=allHatchlings.filter(g=>g.father_id===focus.id||g.mother_id===focus.id);
 
   const row1Y=PAD;
@@ -220,11 +200,9 @@ function drawHatchTree(focus){
     addLine(svg, cx, row2Y+NH, cx, row3Y, false);
     drawKids(svg, kids, cx, row3Y);
   }
-
   mount(svg);
 }
 
-// ── SVG 헬퍼 ──────────────────────────────────────
 function mkSVG(w,h){
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('width',w); svg.setAttribute('height',h);
@@ -307,8 +285,8 @@ function showInfo(data,type){
       '</div>'+
       '<span class="info-link" onclick="location.href=\'/genealogy.html?id='+data.id+'&type=parent\'">이 개체 기준 가계도 →</span>';
   } else {
-    const dad=allAnimals.find(a=>a.id===data.father_id);
-    const mom=allAnimals.find(a=>a.id===data.mother_id);
+    const dad=animalMap.get(data.father_id);
+    const mom=animalMap.get(data.mother_id);
     const date=data.hatch_date?new Date(data.hatch_date).toLocaleDateString('ko-KR'):'';
     el.innerHTML='<div class="info-panel-name" style="font-family:monospace;font-size:13px">'+data.code+'</div>'+
       '<div class="info-panel-meta">'+
@@ -328,7 +306,7 @@ function goBack(){
   else location.href='/';
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
