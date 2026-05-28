@@ -209,15 +209,75 @@ async function apiPatch(path,body){
 }
 
 async function init(){
-  const [a,h,p]=await Promise.all([
-    api('animals?select=id,name,code,morph,gender,image_url,image_url_2,owner_label,created_at&order=created_at.asc'),
-    api('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date,clutch_no&order=hatch_date.desc'),
-    api('posts?select=*&order=created_at.desc')
+  // 동물 데이터 먼저 10개씩 로드
+  const [a,h]=await Promise.all([
+    api('animals?select=id,name,code,morph,gender,image_url,image_url_2,owner_label,created_at&order=created_at.asc&limit=10'),
+    api('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date,clutch_no&order=hatch_date.desc&limit=10')
   ]);
-  animals=a; hatchlings=h; posts=p;
+  animals=a; hatchlings=h;
+  animalPage=1; hatchPage=1;
+  animalDone=a.length<10; hatchDone=h.length<10;
   buildFilters(); buildHFilters();
-  renderMain(); renderHMain(); renderPosts();
+  renderMain(); renderHMain();
+  // posts 별도 로드
+  loadPosts();
   handleVisitor();
+  // 무한 스크롤 세팅
+  setupInfiniteScroll();
+}
+
+async function loadPosts(){
+  try{
+    const p=await api('posts?select=*&order=created_at.desc');
+    posts=p;
+    renderPosts();
+  }catch(e){console.error('posts load error',e);}
+}
+
+let animalPage=1, hatchPage=1;
+let animalDone=false, hatchDone=false;
+let loadingMore=false;
+
+async function loadMoreAnimals(){
+  if(animalDone||loadingMore) return;
+  loadingMore=true;
+  try{
+    const more=await api(`animals?select=id,name,code,morph,gender,image_url,image_url_2,owner_label,created_at&order=created_at.asc&limit=10&offset=${animalPage*10}`);
+    if(more.length<10) animalDone=true;
+    animals=[...animals,...more];
+    animalPage++;
+    buildFilters();
+    renderMain();
+  }catch(e){}
+  loadingMore=false;
+}
+
+async function loadMoreHatch(){
+  if(hatchDone||loadingMore) return;
+  loadingMore=true;
+  try{
+    const more=await api(`hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date,clutch_no&order=hatch_date.desc&limit=10&offset=${hatchPage*10}`);
+    if(more.length<10) hatchDone=true;
+    hatchlings=[...hatchlings,...more];
+    hatchPage++;
+    buildHFilters();
+    renderHMain();
+  }catch(e){}
+  loadingMore=false;
+}
+
+function setupInfiniteScroll(){
+  const sentinel=document.createElement('div');
+  sentinel.id='scroll-sentinel';
+  sentinel.style.height='1px';
+  document.querySelector('.app').appendChild(sentinel);
+  const obs=new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      if(currentTab==='parents') loadMoreAnimals();
+      else if(currentTab==='hatchlings') loadMoreHatch();
+    }
+  },{rootMargin:'200px'});
+  obs.observe(sentinel);
 }
 
 async function handleVisitor(){
@@ -390,16 +450,12 @@ function genderBadge(g){
 function renderMain(){
   const el=document.getElementById('results');
   const filtered=applyFilters(animals);
-  const q=document.getElementById('searchInput').value.trim().toLowerCase();
-  const searched=q?filtered.filter(a=>
-    a.name.toLowerCase().includes(q)||(a.morph&&a.morph.toLowerCase().includes(q))||(a.code&&a.code.toLowerCase().includes(q))
-  ):filtered;
-  if(!searched.length){
-    el.innerHTML=`<div class="empty"><span class="empty-icon">${q?'😶':'🔍'}</span>${q?'검색 결과가 없습니다':'이름을 입력해서 검색하세요'}</div>`;
+  if(!filtered.length){
+    el.innerHTML='<div class="empty"><span class="empty-icon">🦎</span>등록된 개체가 없습니다</div>';
     return;
   }
-  _found=sortByPinned(searched);
-  el.innerHTML=(searched.length>0?`<div class="result-label">${_found.length}마리</div>`:'')+
+  _found=sortByPinned(filtered);
+  el.innerHTML=`<div class="result-label">${_found.length}마리</div>`+
     _found.map((a,i)=>parentCard(a,i)).join('');
   lazyLoad(el);
 }
@@ -407,11 +463,6 @@ function renderMain(){
 function doSearch(){
   clearTimeout(searchTimer);
   searchTimer=setTimeout(()=>renderMain(),200);
-}
-
-function doHSearch(){
-  clearTimeout(searchTimer);
-  searchTimer=setTimeout(()=>renderHMain(),200);
 }
 
 function parentCard(a,i){
@@ -459,20 +510,13 @@ function openParentById(id){
 function renderHMain(){
   const el=document.getElementById('hResults');
   const filtered=applyHFilters(hatchlings);
-  const q=document.getElementById('hSearchInput').value.trim().toLowerCase();
-  const searched=q?filtered.filter(h=>{
-    const dad=animals.find(a=>a.id===h.father_id);
-    const mom=animals.find(a=>a.id===h.mother_id);
-    return h.code.toLowerCase().includes(q)||(h.morph&&h.morph.toLowerCase().includes(q))||
-      (dad&&dad.name.toLowerCase().includes(q))||(mom&&mom.name.toLowerCase().includes(q));
-  }):filtered;
-  _hFound=searched;
-  if(!searched.length){
-    el.innerHTML=`<div class="empty"><span class="empty-icon">${q?'😶':'🥚'}</span>${q?'검색 결과가 없습니다':'등록된 해칭 개체가 없습니다'}</div>`;
+  _hFound=filtered;
+  if(!filtered.length){
+    el.innerHTML='<div class="empty"><span class="empty-icon">🥚</span>등록된 해칭 개체가 없습니다</div>';
     return;
   }
-  el.innerHTML=(searched.length>0?`<div class="result-label">${searched.length}마리</div>`:'')+
-    searched.map(h=>hatchCard(h)).join('');
+  el.innerHTML=`<div class="result-label">${filtered.length}마리</div>`+
+    filtered.map(h=>hatchCard(h)).join('');
 }
 
 function hatchCard(h){
