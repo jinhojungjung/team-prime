@@ -25,7 +25,7 @@ async function init(){
   const id=new URLSearchParams(location.search).get('id');
   if(!id){showError();return;}
   try{
-    const r=await fetch(`${SB}/rest/v1/posts?id=eq.${id}&select=*`,{
+    const r=await fetch(`${SB}/rest/v1/posts?id=eq.${id}&select=id,title,content,category,author_label,created_at`,{
       headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}
     });
     const posts=await r.json();
@@ -65,7 +65,7 @@ function goBack(){
   }
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
