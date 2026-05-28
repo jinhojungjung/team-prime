@@ -5,15 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TEAM.PRIME — Admin</title>
 <link rel="stylesheet" href="/style.css">
+<style>
+.admin-header{background:#000!important}
+.admin-header .logo{color:#fff}
+.admin-header .sub{color:#888}
+.badge-admin{font-size:10px;background:#fff;color:#000;padding:3px 10px;letter-spacing:0.06em;font-weight:700}
+.login-box h2{font-size:18px;font-weight:700;margin-bottom:24px;color:#000}
+.logout-row{padding:16px;border-top:1px solid #eee;background:#fff}
+.uploading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
+.uploading-overlay p{color:#fff;font-size:15px}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.edit-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.edit-modal-bg.open{opacity:1;pointer-events:all}
+.edit-sheet{background:#fff;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;padding:20px 16px 40px;border-top:2px solid #000;transform:translateY(100%);transition:transform 0.25s ease}
+.edit-modal-bg.open .edit-sheet{transform:translateY(0)}
+.edit-sheet h3{font-size:15px;font-weight:700;margin-bottom:16px}
+.sheet-handle{width:36px;height:3px;background:#000;margin:0 auto 20px;border-radius:2px}
+.acct-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
+.acct-row p{font-size:13px;font-weight:600;color:#000}
+</style>
 </head>
 <body>
-<div class="app app-padded">
+<div class="app">
   <div class="header admin-header">
-    <div><div class="logo tp-logo">🦎 TEAM.PRIME</div><div class="sub tp-sub">관리자 패널</div></div>
+    <div><div class="logo">🦎 TEAM.PRIME</div><div class="sub">관리자 패널</div></div>
     <div id="headerBadge" style="display:none"><span class="badge-admin" id="headerLabel"></span></div>
   </div>
 
-  <!-- 어드민 로그인 섹션 -->
   <div class="login-wrap" id="loginWrap">
     <div class="login-box">
       <h2>어드민 로그인</h2>
@@ -37,7 +56,6 @@
     </div>
   </div>
 
-  <!-- 관리자 제어 패널 (로그인 성공 후 노출) -->
   <div class="panel" id="panel">
     <div class="main-tabs">
       <button class="main-tab active" id="amtab-parents" onclick="switchAdminMain('parents')">🦎 부모</button>
@@ -45,7 +63,7 @@
       <button class="main-tab" id="amtab-posts" onclick="switchAdminMain('posts')">📖 가이드</button>
     </div>
 
-    <!-- 부모 개체 섹션 -->
+    <!-- 부모 개체 -->
     <div id="asection-parents">
       <div class="tab-bar">
         <button class="tab active" id="tab-reg-btn" onclick="switchTab('reg')">등록</button>
@@ -57,9 +75,9 @@
         <div id="saveErr" class="msg-err" style="display:none"></div>
         <div class="field"><label>개체 이름 *</label><input type="text" id="aName" placeholder="이름 입력" autocomplete="off"></div>
         <div class="field">
-          <label>개체 코드 * (브리더 내 고유값)</label>
+          <label>개체 코드 *</label>
           <input type="text" id="aCode" placeholder="예: M (마블), S (사나)" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
-          <div class="code-hint">브리더 코드 + 개체 코드로 해칭 코드가 생성됩니다</div>
+          <div class="code-hint">브리더 코드 + 개체 코드로 해칭 코드 생성</div>
         </div>
         <div class="field">
           <label>성별</label>
@@ -87,7 +105,7 @@
       </div>
     </div>
 
-    <!-- 해칭 개체 섹션 -->
+    <!-- 해칭 개체 -->
     <div id="asection-hatchlings" style="display:none">
       <div class="tab-bar">
         <button class="tab active" id="tab-hreg-btn" onclick="switchHTab('hreg')">등록</button>
@@ -96,12 +114,9 @@
       <div class="pane show" id="pane-hreg">
         <div id="hsaveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
         <div id="hsaveErr" class="msg-err" style="display:none"></div>
-        <div class="field"><label>부 (전체 브리더 수컷)</label><select id="hFather" onchange="updateHatchCode()"><option value="">선택</option></select></div>
-        <div class="field"><label>모 (전체 브리더 암컷) — 해칭 브리더 결정</label><select id="hMother" onchange="onMotherChange()"><option value="">선택</option></select></div>
-        <div class="field">
-          <label>해칭 브리더 (모 기준 자동)</label>
-          <div class="code-preview" id="hBreederPreview" style="font-size:13px;letter-spacing:0">—</div>
-        </div>
+        <div class="field"><label>부 (수컷)</label><select id="hFather" onchange="updateHatchCode()"><option value="">선택</option></select></div>
+        <div class="field"><label>모 (암컷) — 해칭 브리더 결정</label><select id="hMother" onchange="onMotherChange()"><option value="">선택</option></select></div>
+        <div class="field"><label>해칭 브리더 (모 기준 자동)</label><div class="code-preview" id="hBreederPreview" style="font-size:13px;letter-spacing:0">—</div></div>
         <div class="field"><label>해칭일</label><input type="date" id="hDate" oninput="updateHatchCode()"></div>
         <div class="field"><label>클러치 번호</label><input type="number" id="hClutch" placeholder="예: 1" min="1" oninput="updateHatchCode()"></div>
         <div class="field"><label>자동 생성 코드</label><div class="code-preview" id="hCodePreview">—</div></div>
@@ -120,7 +135,7 @@
       <div class="pane" id="pane-hlist"><div id="hAdminList"></div></div>
     </div>
 
-    <!-- 게시글 섹션 -->
+    <!-- 게시글 -->
     <div id="asection-posts" style="display:none">
       <div class="tab-bar">
         <button class="tab active" id="tab-preg-btn" onclick="switchPTab('preg')">등록</button>
@@ -142,30 +157,24 @@
             <option value="기타">기타</option>
           </select>
         </div>
-        <div class="field">
-          <label>제목 *</label>
-          <input type="text" id="pTitle" placeholder="제목 입력" autocomplete="off">
-        </div>
+        <div class="field"><label>제목 *</label><input type="text" id="pTitle" placeholder="제목 입력" autocomplete="off"></div>
         <div class="field">
           <label>내용 *</label>
           <div class="editor-toolbar">
-            <button class="etool" onclick="fmt('bold')" title="볼드"><b>B</b></button>
-            <button class="etool" onclick="fmt('italic')" title="이탤릭"><i>I</i></button>
-            <button class="etool" onclick="fmt('underline')" title="밑줄"><u>U</u></button>
-            <div class="etool sep"></div>
-            <button class="etool" onclick="fmtBlock('h1')" title="제목1">H1</button>
-            <button class="etool" onclick="fmtBlock('h2')" title="제목2">H2</button>
-            <button class="etool" onclick="fmtBlock('p')" title="본문">P</button>
-            <div class="etool sep"></div>
-            <button class="etool" onclick="fmt('insertUnorderedList')" title="불릿목록">•—</button>
-            <button class="etool" onclick="fmt('insertOrderedList')" title="번호목록">1—</button>
-            <div class="etool sep"></div>
-            <button class="etool" onclick="insertLink()" title="링크">🔗</button>
-            <button class="etool" onclick="insertImg()" title="이미지">🖼</button>
+            <button class="etool" onclick="fmt('bold')"><b>B</b></button>
+            <button class="etool" onclick="fmt('italic')"><i>I</i></button>
+            <button class="etool" onclick="fmt('underline')"><u>U</u></button>
+            <button class="etool" onclick="fmtBlock('h1')">H1</button>
+            <button class="etool" onclick="fmtBlock('h2')">H2</button>
+            <button class="etool" onclick="fmtBlock('p')">P</button>
+            <button class="etool" onclick="fmt('insertUnorderedList')">•—</button>
+            <button class="etool" onclick="fmt('insertOrderedList')">1—</button>
+            <button class="etool" onclick="insertLink()">🔗</button>
+            <button class="etool" onclick="insertImg()">🖼</button>
           </div>
           <div id="pEditor" class="editor-body" contenteditable="true" spellcheck="false"></div>
         </div>
-        <button class="btn btn-primary" onclick="savePost()" style="margin-top:4px">등록하기</button>
+        <button class="btn btn-primary" style="margin-top:4px" onclick="savePost()">등록하기</button>
         <input type="file" id="editorImgInput" accept="image/*" style="display:none" onchange="handleEditorImg(event)">
       </div>
       <div class="pane" id="pane-plist"><div id="postAdminList"></div></div>
@@ -175,7 +184,7 @@
   </div>
 </div>
 
-<!-- 부모 수정 시트 -->
+<!-- 수정 시트 -->
 <div class="edit-modal-bg" id="editModal" onclick="if(event.target===this)closeEdit()">
   <div class="edit-sheet">
     <div class="sheet-handle"></div>
@@ -212,13 +221,11 @@
 <script>
 const SUPABASE_URL='https://yoiytrwuojrgvjwsywlt.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
-
 const R2_PUBLIC='https://pub-c81d9d63e60e4cb7833abb7d7878490d.r2.dev';
 const R2_ENDPOINT='https://289c96f8798d8b4173b1b237cf5daa3a.r2.cloudflarestorage.com';
 const R2_ACCESS_KEY='46989b9fbe1756db91e76e48ca339a3d';
 const R2_SECRET_KEY='484094a412fe7888c6bed6138ba54b192706695386de35f40eac63d80330274d';
 const R2_BUCKET='team-prime-images';
-
 const MORPHS=['세이블','릴리','세이블릴리','노말','아잔틱','초초','카푸치노','SPT','프라푸치노','크림','세이블아잔틱','릴리아잔틱','세이블릴리아잔틱','100헷아잔틱','릴리100헷아잔틱'];
 const BREEDERS={mycresoft:'마이크레소프트',supremecre:'슈프림크레',morphstudio:'모프스튜디오',geckox:'게코엑스',creming:'크레밍'};
 const BREEDER_CODE={mycresoft:'MCS',supremecre:'SC',morphstudio:'STU',geckox:'GX',creming:'MG'};
@@ -228,8 +235,7 @@ function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCo
 const CREDS={mycresoft:hash('prime2024!'),supremecre:hash('supreme!'),morphstudio:hash('morph!'),geckox:hash('geckox!'),creming:hash('creming!')};
 
 let currentUser=null,pendingFiles=[null,null],selectedMorph=null,animals=[],hatchlings=[];
-let editFiles=[null,null],editMorph=null,editOrigUrls=[null,null];
-let hSelectedMorph=null;
+let editFiles=[null,null],editMorph=null,editOrigUrls=[null,null],hSelectedMorph=null;
 
 async function api(path,opts={}){
   const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,{
@@ -241,48 +247,27 @@ async function api(path,opts={}){
   return t?JSON.parse(t):null;
 }
 
-async function uploadToR2(file, filename) {
-  const region = 'auto';
-  const service = 's3';
-  const host = `${R2_ENDPOINT.replace('https://','')}`;
-  const now = new Date();
-  const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g,'').slice(0,15)+'Z';
-  const dateStamp = amzDate.slice(0,8);
-  const url = `${R2_ENDPOINT}/${R2_BUCKET}/${filename}`;
-
-  const fileBuffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer);
-  const payloadHash = Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
-
-  const canonicalHeaders = `content-type:${file.type}\nhost:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
-  const signedHeaders = 'content-type;host;x-amz-content-sha256;x-amz-date';
-  const canonicalRequest = `PUT\n/${R2_BUCKET}/${filename}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
-
-  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-  const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credentialScope}\n`+
-    Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalRequest)))).map(b=>b.toString(16).padStart(2,'0')).join('');
-
-  async function hmac(key, data) {
-    const k = typeof key==='string' ? new TextEncoder().encode(key) : key;
-    const cryptoKey = await crypto.subtle.importKey('raw',k,{name:'HMAC',hash:'SHA-256'},false,['sign']);
-    return await crypto.subtle.sign('HMAC', cryptoKey, typeof data==='string'?new TextEncoder().encode(data):data);
-  }
-
-  const signingKey = await hmac(await hmac(await hmac(await hmac('AWS4'+R2_SECRET_KEY, dateStamp), region), service), 'aws4_request');
-  const signature = Array.from(new Uint8Array(await hmac(signingKey, stringToSign))).map(b=>b.toString(16).padStart(2,'0')).join('');
-  const authorization = `AWS4-HMAC-SHA256 Credential=${R2_ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
-
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': file.type,
-      'x-amz-date': amzDate,
-      'x-amz-content-sha256': payloadHash,
-      'Authorization': authorization
-    },
-    body: fileBuffer
-  });
-  if(!res.ok) throw new Error(`R2 upload fail: ${res.status}`);
+async function uploadToR2(file,filename){
+  const region='auto',service='s3';
+  const host=R2_ENDPOINT.replace('https://','');
+  const now=new Date();
+  const amzDate=now.toISOString().replace(/[:\-]|\.\d{3}/g,'').slice(0,15)+'Z';
+  const dateStamp=amzDate.slice(0,8);
+  const url=`${R2_ENDPOINT}/${R2_BUCKET}/${filename}`;
+  const fileBuffer=await file.arrayBuffer();
+  const hashBuffer=await crypto.subtle.digest('SHA-256',fileBuffer);
+  const payloadHash=Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const canonicalHeaders=`content-type:${file.type}\nhost:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders='content-type;host;x-amz-content-sha256;x-amz-date';
+  const canonicalRequest=`PUT\n/${R2_BUCKET}/${filename}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+  const credentialScope=`${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign=`AWS4-HMAC-SHA256\n${amzDate}\n${credentialScope}\n`+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonicalRequest)))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  async function hmac(key,data){const k=typeof key==='string'?new TextEncoder().encode(key):key;const ck=await crypto.subtle.importKey('raw',k,{name:'HMAC',hash:'SHA-256'},false,['sign']);return await crypto.subtle.sign('HMAC',ck,typeof data==='string'?new TextEncoder().encode(data):data);}
+  const signingKey=await hmac(await hmac(await hmac(await hmac('AWS4'+R2_SECRET_KEY,dateStamp),region),service),'aws4_request');
+  const signature=Array.from(new Uint8Array(await hmac(signingKey,stringToSign))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const authorization=`AWS4-HMAC-SHA256 Credential=${R2_ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+  const res=await fetch(url,{method:'PUT',headers:{'Content-Type':file.type,'x-amz-date':amzDate,'x-amz-content-sha256':payloadHash,'Authorization':authorization},body:fileBuffer});
+  if(!res.ok)throw new Error(`R2 실패: ${res.status}`);
   return `${R2_PUBLIC}/${filename}`;
 }
 
@@ -290,17 +275,9 @@ function doLogin(){
   const uid=document.getElementById('loginBreeder').value;
   const pw=document.getElementById('loginPw').value;
   const errEl=document.getElementById('loginErr');
-  
   if(!uid){errEl.textContent='브리더를 선택해주세요';errEl.style.display='block';return;}
   if(!pw){errEl.textContent='비밀번호를 입력해주세요';errEl.style.display='block';return;}
-  
-  if(CREDS[uid] !== hash(pw)){
-    errEl.textContent='비밀번호가 올바르지 않습니다';
-    errEl.style.display='block';
-    document.getElementById('loginPw').value='';
-    return;
-  }
-  
+  if(CREDS[uid]!==hash(pw)){errEl.textContent='비밀번호가 올바르지 않습니다';errEl.style.display='block';document.getElementById('loginPw').value='';return;}
   currentUser=uid;
   errEl.style.display='none';
   document.getElementById('loginPw').value='';
@@ -308,12 +285,7 @@ function doLogin(){
   document.getElementById('panel').classList.add('show');
   document.getElementById('headerBadge').style.display='block';
   document.getElementById('headerLabel').textContent=BREEDERS[uid];
-  
-  if(uid!==MASTER_ID) {
-    const acctBtn = document.getElementById('tab-acct-btn');
-    if(acctBtn) acctBtn.style.display='none';
-  }
-  
+  if(uid!==MASTER_ID)document.getElementById('tab-acct-btn').style.display='none';
   buildMorphGrid('morphGrid','parent');
   buildMorphGrid('hMorphGrid','hatch');
   loadAnimalsForSelect();
@@ -327,36 +299,26 @@ function doLogout(){
   document.getElementById('headerBadge').style.display='none';
   document.getElementById('loginBreeder').value='';
   document.getElementById('loginErr').style.display='none';
-  const acctBtn = document.getElementById('tab-acct-btn');
-  if(acctBtn) acctBtn.style.display='';
+  document.getElementById('tab-acct-btn').style.display='';
 }
 
 function switchAdminMain(tab){
   ['parents','hatchlings','posts'].forEach(t=>{
-    const targetSection = document.getElementById(`asection-${t}`);
-    const targetTab = document.getElementById(`amtab-${t}`);
-    if(targetSection) targetSection.style.display=t===tab?'block':'none';
-    if(targetTab) targetTab.classList.toggle('active',t===tab);
+    document.getElementById('asection-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('amtab-'+t).classList.toggle('active',t===tab);
   });
-  if(tab==='posts'){
-    const postPane = document.getElementById('pane-plist');
-    if(postPane && postPane.classList.contains('show')) renderPostList();
-  }
+  if(tab==='posts'&&document.getElementById('pane-plist').classList.contains('show'))renderPostList();
 }
 
 function buildMorphGrid(gridId,type){
-  const el = document.getElementById(gridId);
-  if(!el) return;
-  el.innerHTML=MORPHS.map(m=>
+  document.getElementById(gridId).innerHTML=MORPHS.map(m=>
     `<div class="morph-chip" onclick="pickMorph('${m}',this,'${type}')">${m}</div>`
   ).join('');
 }
 
 function pickMorph(name,el,type){
   const gridId=type==='parent'?'morphGrid':type==='hatch'?'hMorphGrid':'editMorphGrid';
-  const gridEl = document.getElementById(gridId);
-  if(!gridEl) return;
-  gridEl.querySelectorAll('.morph-chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(gridId).querySelectorAll('.morph-chip').forEach(c=>c.classList.remove('selected'));
   if(type==='parent'){if(selectedMorph===name){selectedMorph=null;return;}selectedMorph=name;}
   else if(type==='hatch'){if(hSelectedMorph===name){hSelectedMorph=null;return;}hSelectedMorph=name;}
   else{if(editMorph===name){editMorph=null;return;}editMorph=name;}
@@ -366,53 +328,30 @@ function pickMorph(name,el,type){
 async function loadAnimalsForSelect(){
   try{
     animals=await api('animals?select=id,name,code,gender,owner_id,owner_label&order=name.asc');
-    refreshHatchSelects();
+    const fSel=document.getElementById('hFather');
+    const mSel=document.getElementById('hMother');
+    fSel.innerHTML='<option value="">선택</option>'+animals.filter(a=>a.gender==='수컷').map(a=>`<option value="${a.id}" data-code="${a.code||''}" data-owner="${a.owner_id||''}" data-label="${a.owner_label||''}">${a.name}${a.code?' ('+a.code+')':''} · ${a.owner_label}</option>`).join('');
+    mSel.innerHTML='<option value="">선택</option>'+animals.filter(a=>a.gender==='암컷').map(a=>`<option value="${a.id}" data-code="${a.code||''}" data-owner="${a.owner_id||''}" data-label="${a.owner_label||''}">${a.name}${a.code?' ('+a.code+')':''} · ${a.owner_label}</option>`).join('');
   }catch(e){}
-}
-
-function refreshHatchSelects(){
-  const fSel=document.getElementById('hFather');
-  const mSel=document.getElementById('hMother');
-  if(!fSel || !mSel) return;
-  const males=animals.filter(a=>a.gender==='수컷');
-  fSel.innerHTML='<option value="">선택</option>'+males.map(a=>`<option value="${a.id}" data-code="${a.code||''}" data-owner="${a.owner_id||''}" data-label="${a.owner_label||''}">${a.name}${a.code?' ('+a.code+')':''} · ${a.owner_label}</option>`).join('');
-  const females=animals.filter(a=>a.gender==='암컷');
-  mSel.innerHTML='<option value="">선택</option>'+females.map(a=>`<option value="${a.id}" data-code="${a.code||''}" data-owner="${a.owner_id||''}" data-label="${a.owner_label||''}">${a.name}${a.code?' ('+a.code+')':''} · ${a.owner_label}</option>`).join('');
-  updateHatchCode();
 }
 
 function onMotherChange(){
   const mSel=document.getElementById('hMother');
-  if(!mSel) return;
   const mOpt=mSel.options[mSel.selectedIndex];
-  const preview=document.getElementById('hBreederPreview');
-  if(preview) {
-    if(mSel.value&&mOpt.dataset.label){
-      preview.textContent=mOpt.dataset.label;
-    } else {
-      preview.textContent='—';
-    }
-  }
+  document.getElementById('hBreederPreview').textContent=mSel.value&&mOpt.dataset.label?mOpt.dataset.label:'—';
   updateHatchCode();
 }
 
 function updateHatchCode(){
   const fSel=document.getElementById('hFather');
   const mSel=document.getElementById('hMother');
-  const dateEl=document.getElementById('hDate');
-  const clutchEl=document.getElementById('hClutch');
-  const previewEl=document.getElementById('hCodePreview');
-  
-  if(!fSel || !mSel || !dateEl || !clutchEl || !previewEl) return;
-  
-  const dateVal=dateEl.value;
-  const clutch=clutchEl.value;
-  const fOpt=fSel.selectedIndex >= 0 ? fSel.options[fSel.selectedIndex] : null;
-  const mOpt=mSel.selectedIndex >= 0 ? mSel.options[mSel.selectedIndex] : null;
-  const motherOwner=mOpt?mOpt.dataset.owner:null;
-  const bc=BREEDER_CODE[motherOwner]||'?';
-  const fc=fOpt&&fOpt.dataset.code?fOpt.dataset.code:'?';
-  const mc=mOpt&&mOpt.dataset.code?mOpt.dataset.code:'?';
+  const dateVal=document.getElementById('hDate').value;
+  const clutch=document.getElementById('hClutch').value;
+  const fOpt=fSel.options[fSel.selectedIndex];
+  const mOpt=mSel.options[mSel.selectedIndex];
+  const bc=BREEDER_CODE[mOpt?.dataset?.owner]||'?';
+  const fc=fOpt?.dataset?.code||'?';
+  const mc=mOpt?.dataset?.code||'?';
   let code='—';
   if(fSel.value&&mSel.value&&dateVal&&clutch){
     const d=new Date(dateVal);
@@ -421,20 +360,24 @@ function updateHatchCode(){
     const dd=String(d.getDate()).padStart(2,'0');
     code=`${bc}-${fc}${mc}-${yr}-${mm}${dd}-${clutch}`;
   }
-  previewEl.textContent=code;
+  document.getElementById('hCodePreview').textContent=code;
 }
 
 function handleImg(e,idx){
   const file=e.target.files[0];if(!file)return;
-  if(file.size>10*1024*1024){alert('10MB 이하만 가능합니다');return;}
+  if(file.size>10*1024*1024){alert('10MB 이하만');return;}
   pendingFiles[idx]=file;
-  const r=new FileReader();r.onload=ev=>{document.getElementById(`uploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('uploadPh'+idx).innerHTML='<img src="'+ev.target.result+'" class="upload-preview"><div class="upload-label">사진 '+(idx+1)+'</div>';};
+  r.readAsDataURL(file);
 }
 
 function handleEditImg(e,idx){
   const file=e.target.files[0];if(!file)return;
   editFiles[idx]=file;
-  const r=new FileReader();r.onload=ev=>{document.getElementById(`editUploadPh${idx}`).innerHTML=`<img src="${ev.target.result}" class="upload-preview"><div class="upload-label">사진 ${idx+1}</div>`;};r.readAsDataURL(file);
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('editUploadPh'+idx).innerHTML='<img src="'+ev.target.result+'" class="upload-preview"><div class="upload-label">사진 '+(idx+1)+'</div>';};
+  r.readAsDataURL(file);
 }
 
 function showUploading(show){
@@ -448,21 +391,20 @@ async function saveAnimal(){
   const code=document.getElementById('aCode').value.trim().toUpperCase();
   const gender=document.getElementById('aGender').value;
   const okEl=document.getElementById('saveOk'),errEl=document.getElementById('saveErr');
-  if(!okEl || !errEl) return;
   okEl.style.display='none';errEl.style.display='none';
-  if(!name||!code){errEl.textContent='필수 항목을 지정하세요.';errEl.style.display='block';return;}
+  if(!name||!code){errEl.textContent='이름과 코드를 입력해주세요';errEl.style.display='block';return;}
   showUploading(true);
   try{
     const ts=Date.now();
     let url1=null,url2=null;
-    if(pendingFiles[0])url1=await uploadToR2(pendingFiles[0],`${currentUser}_${ts}_1.${pendingFiles[0].name.split('.').pop()}`);
-    if(pendingFiles[1])url2=await uploadToR2(pendingFiles[1],`${currentUser}_${ts}_2.${pendingFiles[1].name.split('.').pop()}`);
+    if(pendingFiles[0])url1=await uploadToR2(pendingFiles[0],currentUser+'_'+ts+'_1.'+pendingFiles[0].name.split('.').pop());
+    if(pendingFiles[1])url2=await uploadToR2(pendingFiles[1],currentUser+'_'+ts+'_2.'+pendingFiles[1].name.split('.').pop());
     await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:selectedMorph||null,image_url:url1,image_url_2:url2,owner_id:currentUser,owner_label:BREEDERS[currentUser]})});
     okEl.style.display='block';
     document.getElementById('aName').value='';document.getElementById('aCode').value='';document.getElementById('aGender').value='';
     document.querySelectorAll('#morphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
     selectedMorph=null;pendingFiles=[null,null];
-    ['uploadPh0','uploadPh1'].forEach((id,i)=>{document.getElementById(id).innerHTML=`<div style="font-size:22px">📷</div><div class="upload-label">사진 ${i+1}</div>`;});
+    ['uploadPh0','uploadPh1'].forEach((id,i)=>{document.getElementById(id).innerHTML='<div style="font-size:22px">📷</div><div class="upload-label">사진 '+(i+1)+'</div>';});
     setTimeout(()=>okEl.style.display='none',2500);
     await loadAnimalsForSelect();
   }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
@@ -477,92 +419,67 @@ async function saveHatchling(){
   const gender=document.getElementById('hGender').value;
   const codeText=document.getElementById('hCodePreview').textContent;
   const okEl=document.getElementById('hsaveOk'),errEl=document.getElementById('hsaveErr');
-  if(!okEl || !errEl) return;
   okEl.style.display='none';errEl.style.display='none';
-  if(!fatherId||!motherId||!dateVal||!clutch){errEl.textContent='항목을 입력하세요';errEl.style.display='block';return;}
+  if(!fatherId||!motherId||!dateVal||!clutch){errEl.textContent='모든 항목을 입력해주세요';errEl.style.display='block';return;}
   const father=animals.find(a=>a.id===fatherId);
   const mother=animals.find(a=>a.id===motherId);
-  const hBreederId=mother?.owner_id||currentUser;
-  const hBreederLabel=mother?.owner_label||BREEDERS[currentUser];
   showUploading(true);
   try{
     await api('hatchlings',{method:'POST',body:JSON.stringify({
       code:codeText,father_id:fatherId,mother_id:motherId,
       father_code:father?.code||null,mother_code:mother?.code||null,
       morph:hSelectedMorph||null,gender:gender||null,
-      owner_id:hBreederId,owner_label:hBreederLabel,
+      owner_id:mother?.owner_id||currentUser,owner_label:mother?.owner_label||BREEDERS[currentUser],
       hatch_date:dateVal,clutch_no:parseInt(clutch)
     })});
     okEl.style.display='block';
     document.getElementById('hFather').value='';document.getElementById('hMother').value='';
     document.getElementById('hDate').value='';document.getElementById('hClutch').value='';
-    document.getElementById('hGender').value='';document.getElementById('hCodePreview').textContent='—';
+    document.getElementById('hGender').value='';
+    document.getElementById('hCodePreview').textContent='—';
     document.getElementById('hBreederPreview').textContent='—';
     document.querySelectorAll('#hMorphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
     hSelectedMorph=null;
     setTimeout(()=>okEl.style.display='none',2500);
-  }catch(e){errEl.textContent='등록 오류: '+e.message;errEl.style.display='block';}
+  }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
   finally{showUploading(false);}
 }
 
 async function renderAdminList(){
   const el=document.getElementById('adminList');
-  if(!el) return;
   el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
-  const filter=currentUser===MASTER_ID?'animals?select=*&order=created_at.desc':`animals?select=*&owner_id=eq.${currentUser}&order=created_at.desc`;
+  const filter=currentUser===MASTER_ID?'animals?select=*&order=created_at.desc':'animals?select=*&owner_id=eq.'+currentUser+'&order=created_at.desc';
   try{
     animals=await api(filter);
-    if(!animals.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">개체가 없습니다</p>';return;}
+    if(!animals.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 개체가 없습니다</p>';return;}
     el.innerHTML=animals.map(a=>{
-      const thumb=a.image_url?`<img src="${a.image_url}" alt="${a.name}">`:`<span style="font-size:20px">🦎</span>`;
-      return `<div class="list-item">
-        <div class="list-item-thumb">${thumb}</div>
-        <div class="list-item-info">
-          <p>${a.name}${a.code?` <span style="font-family:monospace;font-size:10px;color:#aaa">${a.code}</span>`:''}${a.morph?`<span class="morph-mini">${a.morph}</span>`:''}</p>
-          <span>${a.owner_label}${a.gender?' · '+a.gender:''}</span>
-        </div>
-        <div class="list-item-actions">
-          <button class="btn-edit" onclick="openEdit('${a.id}')">수정</button>
-          <button class="btn-danger" onclick="deleteAnimal('${a.id}','${a.name}')">삭제</button>
-        </div>
-      </div>`;
+      const thumb=a.image_url?'<img src="'+a.image_url+'" alt="'+a.name+'">'+'':'<span style="font-size:20px">🦎</span>';
+      return '<div class="list-item"><div class="list-item-thumb">'+thumb+'</div><div class="list-item-info"><p>'+a.name+(a.code?' <span style="font-family:monospace;font-size:10px;color:#aaa">'+a.code+'</span>':'')+(a.morph?'<span class="morph-mini">'+a.morph+'</span>':'')+'</p><span>'+a.owner_label+(a.gender?' · '+a.gender:'')+'</span></div><div class="list-item-actions"><button class="btn-edit" onclick="openEdit(\''+a.id+'\')">수정</button><button class="btn-danger" onclick="deleteAnimal(\''+a.id+'\',\''+a.name+'\')">삭제</button></div></div>';
     }).join('');
-  }catch(e){el.innerHTML=`<p style="font-size:13px;color:#e00;padding:12px 0">오류: ${e.message}</p>`;}
+  }catch(e){el.innerHTML='<p style="font-size:13px;color:#e00;padding:12px 0">오류: '+e.message+'</p>';}
 }
 
 async function renderHatchlingList(){
   const el=document.getElementById('hAdminList');
-  if(!el) return;
   el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">불러오는 중...</p>';
-  const filter=currentUser===MASTER_ID?'hatchlings?select=*&order=hatch_date.desc':`hatchlings?select=*&owner_id=eq.${currentUser}&order=hatch_date.desc`;
+  const filter=currentUser===MASTER_ID?'hatchlings?select=*&order=hatch_date.desc':'hatchlings?select=*&owner_id=eq.'+currentUser+'&order=hatch_date.desc';
   try{
     hatchlings=await api(filter);
-    if(!hatchlings.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">해칭 개체가 없습니다</p>';return;}
-    el.innerHTML=hatchlings.map(h=>{
-      return `<div class="list-item">
-        <div class="list-item-thumb" style="font-size:20px">🥚</div>
-        <div class="list-item-info">
-          <p style="font-family:monospace;font-size:12px">${h.code}</p>
-          <span>${h.morph||'모프미확인'}</span>
-        </div>
-        <div class="list-item-actions">
-          <button class="btn-danger" onclick="deleteHatchling('${h.id}','${h.code}')">삭제</button>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML=`<p style="font-size:13px;color:#e00;padding:12px 0">오류</p>`;}
+    if(!hatchlings.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 해칭 개체가 없습니다</p>';return;}
+    el.innerHTML=hatchlings.map(h=>'<div class="list-item"><div class="list-item-thumb" style="font-size:20px">🥚</div><div class="list-item-info"><p style="font-family:monospace;font-size:12px">'+h.code+'</p><span>'+(h.morph||'모프미확인')+'</span></div><div class="list-item-actions"><button class="btn-danger" onclick="deleteHatchling(\''+h.id+'\',\''+h.code+'\')">삭제</button></div></div>').join('');
+  }catch(e){el.innerHTML='<p style="font-size:13px;color:#e00;padding:12px 0">오류</p>';}
 }
 
 async function deleteAnimal(id,name){
-  if(!confirm(`"${name}" 삭제하겠습니까?`))return;
-  try{await api(`animals?id=eq.${id}`,{method:'DELETE'});renderAdminList();}
-  catch(e){alert('실패');}
+  if(!confirm('"'+name+'" 삭제하겠습니까?'))return;
+  try{await api('animals?id=eq.'+id,{method:'DELETE'});renderAdminList();}
+  catch(e){alert('삭제 실패');}
 }
 
 async function deleteHatchling(id,code){
-  if(!confirm(`"${code}" 삭제하겠습니까?`))return;
-  try{await api(`hatchlings?id=eq.${id}`,{method:'DELETE'});renderHatchlingList();}
-  catch(e){alert('실패');}
+  if(!confirm('"'+code+'" 삭제하겠습니까?'))return;
+  try{await api('hatchlings?id=eq.'+id,{method:'DELETE'});renderHatchlingList();}
+  catch(e){alert('삭제 실패');}
 }
 
 function openEdit(id){
@@ -576,7 +493,7 @@ function openEdit(id){
   if(a.morph){setTimeout(()=>{document.querySelectorAll('#editMorphGrid .morph-chip').forEach(c=>{if(c.textContent===a.morph)c.classList.add('selected');});},50);}
   ['editUploadPh0','editUploadPh1'].forEach((pid,i)=>{
     const url=i===0?a.image_url:a.image_url_2;
-    document.getElementById(pid).innerHTML=url?`<img src="${url}" class="upload-preview"><div class="upload-label">사진 ${i+1}</div>`:`<div style="font-size:22px">📷</div><div class="upload-label">사진</div>`;
+    document.getElementById(pid).innerHTML=url?'<img src="'+url+'" class="upload-preview"><div class="upload-label">사진 '+(i+1)+' (기존)</div>':'<div style="font-size:22px">📷</div><div class="upload-label">사진 '+(i+1)+'</div>';
   });
   document.getElementById('editModal').classList.add('open');
 }
@@ -589,45 +506,43 @@ async function submitEdit(){
   const code=document.getElementById('editCode').value.trim().toUpperCase();
   const gender=document.getElementById('editGender').value;
   const okEl=document.getElementById('editOk'),errEl=document.getElementById('editErr');
-  if(!okEl || !errEl) return;
   okEl.style.display='none';errEl.style.display='none';
-  if(!name){errEl.textContent='이름 필수';errEl.style.display='block';return;}
+  if(!name){errEl.textContent='이름을 입력해주세요';errEl.style.display='block';return;}
   showUploading(true);
   try{
     const ts=Date.now();
     let url1=editOrigUrls[0],url2=editOrigUrls[1];
-    if(editFiles[0])url1=await uploadToR2(editFiles[0],`${currentUser}_${ts}_1.${editFiles[0].name.split('.').pop()}`);
-    if(editFiles[1])url2=await uploadToR2(editFiles[1],`${currentUser}_${ts}_2.${editFiles[1].name.split('.').pop()}`);
-    await api(`animals?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:url1,image_url_2:url2})});
+    if(editFiles[0])url1=await uploadToR2(editFiles[0],currentUser+'_'+ts+'_1.'+editFiles[0].name.split('.').pop());
+    if(editFiles[1])url2=await uploadToR2(editFiles[1],currentUser+'_'+ts+'_2.'+editFiles[1].name.split('.').pop());
+    await api('animals?id=eq.'+id,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:url1,image_url_2:url2})});
     okEl.style.display='block';
     setTimeout(()=>{okEl.style.display='none';closeEdit();renderAdminList();},1500);
-  }catch(e){errEl.textContent='실패';errEl.style.display='block';}
+  }catch(e){errEl.textContent='수정 실패: '+e.message;errEl.style.display='block';}
   finally{showUploading(false);}
 }
 
 async function renderAcctPanel(){
   const el=document.getElementById('acctPanel');
-  if(!el) return;
-  if(currentUser!==MASTER_ID){el.innerHTML='<p>접근 권한이 없습니다.</p>';return;}
+  if(currentUser!==MASTER_ID){el.innerHTML='<p style="font-size:13px;color:#888;padding:10px 0">마이크레소프트만 접근 가능합니다</p>';return;}
   let visitorHtml='';
-  try{const r=await api('visitor_count?id=eq.1');const cnt=r&&r[0]?r[0].count:0;visitorHtml=`<div class="visitor-box"><div class="num">${cnt.toLocaleString()}</div></div>`;}catch(e){}
-  el.innerHTML=visitorHtml+Object.entries(BREEDERS).map(([uid,label])=>`
-      <div class="acct-row"><p>${label}</p>
-      <button class="btn-danger" onclick="changePw('${uid}')">변경</button></div>`).join('');
+  try{const r=await api('visitor_count?id=eq.1');const cnt=r&&r[0]?r[0].count:0;visitorHtml='<div class="visitor-box"><div class="num">'+cnt.toLocaleString()+'</div><div class="lbl">누적 방문자</div></div>';}catch(e){}
+  el.innerHTML=visitorHtml+'<p style="font-size:12px;color:#888;margin-bottom:14px">비밀번호 변경</p>'+
+    Object.entries(BREEDERS).map(([uid,label])=>
+      '<div class="acct-row"><p>'+label+'</p><button class="btn-danger" onclick="changePw(\''+uid+'\')">변경</button></div>'
+    ).join('');
 }
 
 function changePw(uid){
-  const np=prompt('새 비밀번호:');
-  if(!np||np.length<4) return;
+  const np=prompt(BREEDERS[uid]+' 새 비밀번호 (4자 이상):');
+  if(!np||np.length<4){if(np!==null)alert('4자 이상');return;}
   CREDS[uid]=hash(np);
+  alert('변경됨 (이 세션 한정)');
 }
 
 function switchTab(tab){
   ['reg','list','acct'].forEach(t=>{
-    const targetPane = document.getElementById(`pane-${t}`);
-    const targetTabBtn = document.getElementById(`tab-${t}-btn`);
-    if(targetPane) targetPane.classList.toggle('show',t===tab);
-    if(targetTabBtn) targetTabBtn.classList.toggle('active',t===tab);
+    document.getElementById('pane-'+t).classList.toggle('show',t===tab);
+    document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===tab);
   });
   if(tab==='list')renderAdminList();
   if(tab==='acct')renderAcctPanel();
@@ -635,75 +550,65 @@ function switchTab(tab){
 
 function switchHTab(tab){
   ['hreg','hlist'].forEach(t=>{
-    const targetPane = document.getElementById(`pane-${t}`);
-    const targetTabBtn = document.getElementById(`tab-${t}-btn`);
-    if(targetPane) targetPane.classList.toggle('show',t===tab);
-    if(targetTabBtn) targetTabBtn.classList.toggle('active',t===tab);
+    document.getElementById('pane-'+t).classList.toggle('show',t===tab);
+    document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===tab);
   });
-  if(tab==='hlist'){renderHatchlingList();}
+  if(tab==='hlist')renderHatchlingList();
 }
 
 function switchPTab(tab){
   ['preg','plist'].forEach(t=>{
-    const targetPane = document.getElementById(`pane-${t}`);
-    const targetTabBtn = document.getElementById(`tab-${t}-btn`);
-    if(targetPane) targetPane.classList.toggle('show',t===tab);
-    if(targetTabBtn) targetTabBtn.classList.toggle('active',t===tab);
+    document.getElementById('pane-'+t).classList.toggle('show',t===tab);
+    document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===tab);
   });
   if(tab==='plist')renderPostList();
 }
 
 function fmt(cmd){document.execCommand(cmd,false,null);document.getElementById('pEditor').focus();}
 function fmtBlock(tag){document.execCommand('formatBlock',false,tag);document.getElementById('pEditor').focus();}
-function insertLink(){
-  const url=prompt('URL:');
-  if(url) document.execCommand('createLink',false,url);
-}
-function insertImg(){
-  const imgInput = document.getElementById('editorImgInput');
-  if(imgInput) imgInput.click();
-}
+function insertLink(){const url=prompt('링크 URL:');if(url)document.execCommand('createLink',false,url);}
+function insertImg(){document.getElementById('editorImgInput').click();}
 async function handleEditorImg(e){
   const file=e.target.files[0];if(!file)return;
   showUploading(true);
   try{
     const ts=Date.now();
-    const url=await uploadToR2(file,`post_${currentUser}_${ts}.${file.name.split('.').pop()}`);
-    document.execCommand('insertHTML',false,`<img src="${url}">`);
-  }catch(err){alert('실패');}
-  finally{showUploading(false);}
+    const url=await uploadToR2(file,'post_'+currentUser+'_'+ts+'.'+file.name.split('.').pop());
+    document.execCommand('insertHTML',false,'<img src="'+url+'">');
+  }catch(err){alert('이미지 업로드 실패');}
+  finally{showUploading(false);e.target.value='';}
 }
 
 async function savePost(){
   const title=document.getElementById('pTitle').value.trim();
   const html=document.getElementById('pEditor').innerHTML.trim();
   const category=document.getElementById('pCategory').value;
-  if(!title||!html) return;
+  const okEl=document.getElementById('psaveOk'),errEl=document.getElementById('psaveErr');
+  okEl.style.display='none';errEl.style.display='none';
+  if(!title||!html||html==='<br>'){errEl.textContent='제목과 내용을 입력해주세요';errEl.style.display='block';return;}
   try{
     await api('posts',{method:'POST',body:JSON.stringify({title,content:html,category:category||null,author_id:currentUser,author_label:BREEDERS[currentUser]})});
+    okEl.style.display='block';
     document.getElementById('pTitle').value='';
     document.getElementById('pEditor').innerHTML='';
-    alert('완료');
-  }catch(e){}
+    document.getElementById('pCategory').value='';
+    setTimeout(()=>okEl.style.display='none',2500);
+  }catch(e){errEl.textContent='등록 실패: '+e.message;errEl.style.display='block';}
 }
 
 async function renderPostList(){
   const el=document.getElementById('postAdminList');
-  if(!el) return;
   try{
-    const filter=currentUser===MASTER_ID?'posts?select=id,title,author_label,category&order=created_at.desc':`posts?select=id,title,author_label,category&author_id=eq.${currentUser}&order=created_at.desc`;
+    const filter=currentUser===MASTER_ID?'posts?select=id,title,author_label,category,created_at&order=created_at.desc':'posts?select=id,title,author_label,category,created_at&author_id=eq.'+currentUser+'&order=created_at.desc';
     const posts=await api(filter);
-    el.innerHTML=posts.map(p=>`
-      <div class="list-item">
-        <p>${p.title}</p>
-        <button class="btn-danger" onclick="deletePost('${p.id}')">삭제</button>
-      </div>`).join('');
-  }catch(e){}
+    if(!posts.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:12px 0">등록된 게시글이 없습니다</p>';return;}
+    el.innerHTML=posts.map(p=>'<div class="list-item"><div class="list-item-info" style="min-width:0"><p style="white-space:normal">'+p.title+'</p><span>'+(p.category||'')+'</span></div><button class="btn-danger" onclick="deletePost(\''+p.id+'\')">삭제</button></div>').join('');
+  }catch(e){el.innerHTML='<p style="font-size:13px;color:#e00">오류</p>';}
 }
 
 async function deletePost(id){
   if(!confirm('삭제하시겠습니까?'))return;
-  try{await api(`posts?id=eq.${id}`,{method:'DELETE'});renderPostList();}catch(e){}
+  try{await api('posts?id=eq.'+id,{method:'DELETE'});renderPostList();}catch(e){}
 }
 </script>
 </body>
