@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#ffffff">
 <title>TEAM.PRIME</title>
 <link rel="stylesheet" href="/style.css">
+<style>.post-content img{width:100%!important;max-width:100%!important;height:auto!important;display:block;margin:14px 0;border-radius:4px}</style>
 </head>
 <body>
 <div class="app">
@@ -25,7 +26,7 @@ async function init(){
   const id=new URLSearchParams(location.search).get('id');
   if(!id){showError();return;}
   try{
-    const r=await fetch(`${SB}/rest/v1/posts?id=eq.${id}&select=id,title,content,category,author_label,created_at`,{
+    const r=await fetch(`${SB}/rest/v1/posts?id=eq.${id}&select=*`,{
       headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}
     });
     const posts=await r.json();
@@ -65,7 +66,7 @@ function goBack(){
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+init();
 </script>
 </body>
 </html>
