@@ -91,21 +91,17 @@ async function patch(path,body){
 }
 
 async function init(){
-  // 필터용 전체 메타 + 첫 카드 10개 동시 로드
-  const [allMeta, allHMeta, first, firstH] = await Promise.all([
-    get('animals?select=id,name,morph,gender,owner_label,created_at&order=created_at.asc'),
-    get('hatchlings?select=id,morph,gender,owner_label&order=hatch_date.desc'),
-    get('animals?select=id,name,code,morph,gender,image_url,image_url_2,owner_label,created_at&order=created_at.asc&limit=10'),
-    get('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date,clutch_no&order=hatch_date.desc&limit=10')
+  // 전체 데이터 한번에 (이미지 포함, 쿼리 2개만)
+  const [a, h] = await Promise.all([
+    get('animals?select=id,name,code,morph,gender,image_url,image_url_2,owner_label,created_at&order=created_at.asc'),
+    get('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date,clutch_no&order=hatch_date.desc')
   ]);
-  // 전체 메타는 필터용
-  allAnimalsMeta=allMeta; allHatchlingsMeta=allHMeta;
-  // 카드 표시용
-  animals=first; hatchlings=firstH;
-  animalDone=first.length<10; hatchDone=firstH.length<10;
+  animals=a; hatchlings=h;
+  allAnimalsMeta=a; allHatchlingsMeta=h;
+  animalDone=true; hatchDone=true;
   buildFilters(); buildHFilters();
   renderMain(); renderHMain();
-  loadPosts(); handleVisitor(); setupScroll();
+  loadPosts(); handleVisitor();
 }
 
 async function loadPosts(){
@@ -132,16 +128,7 @@ async function loadMoreHatch(){
   }catch(e){} loadingMore=false;
 }
 
-function setupScroll(){
-  const s=document.createElement('div'); s.style.height='1px';
-  document.querySelector('.app').appendChild(s);
-  new IntersectionObserver(e=>{
-    if(e[0].isIntersecting){
-      if(currentTab==='parents') loadMoreAnimals();
-      else if(currentTab==='hatchlings') loadMoreHatch();
-    }
-  },{rootMargin:'200px'}).observe(s);
-}
+function setupScroll(){}
 
 async function handleVisitor(){
   try{
