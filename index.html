@@ -198,7 +198,7 @@ function buildHFilters(){
   const morphs=['전체',...new Set(src.map(h=>h.morph).filter(Boolean))].sort();
   const genders=['전체',...new Set(src.map(h=>h.gender).filter(Boolean))];
   document.getElementById('hBreederFilters').innerHTML=breeders.map(b=>'<button class="filter-chip'+(b===hActiveBreeder?' active':'')+'" onclick="setHBreeder(\''+b+'\')">'+(b==='마이크레소프트'?'👑 '+b:b)+'</button>').join('');
-  document.getElementById('hMorphFilters').innerHTML=morphs.map(m=>'<button class="filter-chip'+(m===hActiveMorph?' active':'')+'" onclick="setHMorph(\''+m+'\')">'+m+'</button>').join('');
+  document.getElementById('hMorphFilters').innerHTML=morphs.map(m=>'<button class="filter-chip'+(m==='전체'&&!hActiveMorphs.length?' active':hActiveMorphs.includes(m)?' active':'')+'" onclick="setHMorph(\''+m+'\')">'+m+'</button>').join('');
   document.getElementById('hGenderFilters').innerHTML=genders.map(g=>'<button class="filter-chip'+(g===hActiveGender?' active':'')+'" onclick="setHGender(\''+g+'\')">'+(g==='수컷'?'♂ 수컷':g==='암컷'?'♀ 암컷':g)+'</button>').join('');
 }
 function setBreeder(b){activeBreeder=b;buildFilters();renderMain();}
@@ -295,7 +295,7 @@ function hatchCard(h){
   const dad=animals.find(a=>a.id===h.father_id);
   const mom=animals.find(a=>a.id===h.mother_id);
   const parents=[dad&&dad.name,mom&&mom.name].filter(Boolean).join(' × ');
-  return '<div class="animal-card" onclick="openHatch(\''+h.id+'\')"><div class="animal-thumb"><span style="font-size:28px">🥚</span></div><div class="animal-info"><div class="code-text" style="font-size:11px;font-weight:700;color:#000">'+h.code+'</div><h3 style="margin-top:2px;font-size:13px">'+(h.morph||'모프 미확인')+'</h3>'+(parents?'<div style="font-size:11px;color:#aaa;margin-top:1px">'+parents+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+h.owner_label+'</span>'+genderBadge(h.gender)+'</div></div>'+(h.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
+  return '<div class="animal-card" onclick="openHatch(\''+h.id+'\')"><div class="animal-thumb"><span style="font-size:28px">🥚</span></div><div class="animal-info"><div class="code-text" style="font-size:11px;font-weight:700;color:#000">'+h.code+'</div><h3 style="margin-top:2px;font-size:13px">'+(h.morph||'모프 미구분')+'</h3>'+(parents?'<div style="font-size:11px;color:#aaa;margin-top:1px">'+parents+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+h.owner_label+'</span>'+genderBadge(h.gender)+'</div></div>'+(h.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
 }
 
 function openHatch(id){
@@ -313,7 +313,7 @@ function openHatch(id){
     '<div style="height:120px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:60px">🥚</div>'+
     '<div class="modal-inner">'+
     '<div class="detail-code" style="font-size:13px;font-weight:700;color:#000;font-family:monospace">'+h.code+'</div>'+
-    '<div class="detail-name" style="font-size:18px;margin-top:4px">'+(h.morph||'모프 미확인')+'</div>'+
+    '<div class="detail-name" style="font-size:18px;margin-top:4px">'+(h.morph||'모프 미구분')+'</div>'+
     '<div style="margin-top:10px">'+
     (h.gender?'<div class="detail-row"><span>성별</span><span>'+h.gender+'</span></div>':'')+
     (date?'<div class="detail-row"><span>해칭일</span><span>'+date+'</span></div>':'')+
