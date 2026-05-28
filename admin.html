@@ -33,7 +33,7 @@
     <div id="headerBadge" style="display:none"><span class="badge-admin" id="headerLabel"></span></div>
   </div>
 
-  <div class="login-wrap" id="loginWrap">
+  <div class="login-wrap" id="loginWrap" style="display:flex">
     <div class="login-box">
       <h2>어드민 로그인</h2>
       <div id="loginErr" class="msg-err" style="display:none"></div>
@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  <div class="panel" id="panel">
+  <div class="panel" id="panel" style="display:none">
     <div class="main-tabs">
       <button class="main-tab active" id="amtab-parents" onclick="switchAdminMain('parents')">🦎 부모</button>
       <button class="main-tab" id="amtab-hatchlings" onclick="switchAdminMain('hatchlings')">🥚 해칭</button>
@@ -185,7 +185,7 @@
 </div>
 
 <!-- 수정 시트 -->
-<div class="edit-modal-bg" id="editModal" onclick="if(event.target===this)closeEdit()">
+<div class="edit-modal-bg" id="editModal" onclick="if(event.target===this)closeEdit()" style="opacity:0;pointer-events:none">
   <div class="edit-sheet">
     <div class="sheet-handle"></div>
     <h3>부모 개체 수정</h3>
@@ -226,7 +226,7 @@ const R2_ENDPOINT='https://289c96f8798d8b4173b1b237cf5daa3a.r2.cloudflarestorage
 const R2_ACCESS_KEY='46989b9fbe1756db91e76e48ca339a3d';
 const R2_SECRET_KEY='484094a412fe7888c6bed6138ba54b192706695386de35f40eac63d80330274d';
 const R2_BUCKET='team-prime-images';
-const MORPHS=['세이블','릴리','세이블릴리','노말','아잔틱','초초','카푸치노','SPT','프라푸치노','크림','세이블아잔틱','릴리아잔틱','세이블릴리아잔틱','100헷아잔틱','릴리100헷아잔틱'];
+const MORPHS=['세이블','릴리','세이블릴리','노말','아잔틱','초초','카푸치노','SPT','프라푸치노','크림','세이블아잔틱','릴리아잔틱','세이블릴리아잔틱','100헷아잔틱','릴리100헷아잔틱','100헷','슈달'];
 const BREEDERS={mycresoft:'마이크레소프트',supremecre:'슈프림크레',morphstudio:'모프스튜디오',geckox:'게코엑스',creming:'크레밍'};
 const BREEDER_CODE={mycresoft:'MCS',supremecre:'SC',morphstudio:'STU',geckox:'GX',creming:'MG'};
 const MASTER_ID='mycresoft';
@@ -282,7 +282,7 @@ function doLogin(){
   errEl.style.display='none';
   document.getElementById('loginPw').value='';
   document.getElementById('loginWrap').style.display='none';
-  document.getElementById('panel').classList.add('show');
+  const p=document.getElementById('panel'); p.classList.add('show'); p.style.display='flex';
   document.getElementById('headerBadge').style.display='block';
   document.getElementById('headerLabel').textContent=BREEDERS[uid];
   if(uid!==MASTER_ID)document.getElementById('tab-acct-btn').style.display='none';
@@ -295,7 +295,7 @@ function doLogin(){
 function doLogout(){
   currentUser=null;pendingFiles=[null,null];selectedMorph=null;hSelectedMorph=null;
   document.getElementById('loginWrap').style.display='flex';
-  document.getElementById('panel').classList.remove('show');
+  const p2=document.getElementById('panel'); p2.classList.remove('show'); p2.style.display='none';
   document.getElementById('headerBadge').style.display='none';
   document.getElementById('loginBreeder').value='';
   document.getElementById('loginErr').style.display='none';
@@ -495,10 +495,18 @@ function openEdit(id){
     const url=i===0?a.image_url:a.image_url_2;
     document.getElementById(pid).innerHTML=url?'<img src="'+url+'" class="upload-preview"><div class="upload-label">사진 '+(i+1)+' (기존)</div>':'<div style="font-size:22px">📷</div><div class="upload-label">사진 '+(i+1)+'</div>';
   });
-  document.getElementById('editModal').classList.add('open');
+  const _em=document.getElementById('editModal');
+  _em.classList.add('open');
+  _em.style.opacity='1';
+  _em.style.pointerEvents='all';
 }
 
-function closeEdit(){document.getElementById('editModal').classList.remove('open');}
+function closeEdit(){
+  const m=document.getElementById('editModal');
+  m.classList.remove('open');
+  m.style.opacity='0';
+  m.style.pointerEvents='none';
+}
 
 async function submitEdit(){
   const id=document.getElementById('editId').value;
