@@ -33,7 +33,7 @@
     <div id="headerBadge" style="display:none"><span class="badge-admin" id="headerLabel"></span></div>
   </div>
 
-  <div class="login-wrap" id="loginWrap" style="display:flex">
+  <div id="loginWrap" style="display:flex;flex:1;align-items:center;justify-content:center;padding:32px 24px">
     <div class="login-box">
       <h2>어드민 로그인</h2>
       <div id="loginErr" class="msg-err" style="display:none"></div>
@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  <div class="panel" id="panel" style="display:none">
+  <div id="panel" style="display:none;flex-direction:column;flex:1">
     <div class="main-tabs">
       <button class="main-tab active" id="amtab-parents" onclick="switchAdminMain('parents')">🦎 부모</button>
       <button class="main-tab" id="amtab-hatchlings" onclick="switchAdminMain('hatchlings')">🥚 해칭</button>
@@ -281,8 +281,8 @@ function doLogin(){
   currentUser=uid;
   errEl.style.display='none';
   document.getElementById('loginPw').value='';
-  document.getElementById('loginWrap').style.display='none';
-  const p=document.getElementById('panel'); p.classList.add('show'); p.style.display='flex';
+  const lw=document.getElementById('loginWrap'); lw.style.display='none'; lw.style.visibility='hidden';
+  const p=document.getElementById('panel'); p.style.display='flex'; p.style.flexDirection='column'; p.style.flex='1';
   document.getElementById('headerBadge').style.display='block';
   document.getElementById('headerLabel').textContent=BREEDERS[uid];
   if(uid!==MASTER_ID)document.getElementById('tab-acct-btn').style.display='none';
@@ -294,8 +294,8 @@ function doLogin(){
 
 function doLogout(){
   currentUser=null;pendingFiles=[null,null];selectedMorph=null;hSelectedMorph=null;
-  document.getElementById('loginWrap').style.display='flex';
-  const p2=document.getElementById('panel'); p2.classList.remove('show'); p2.style.display='none';
+  const lw2=document.getElementById('loginWrap'); lw2.style.display='flex'; lw2.style.visibility='visible';
+  const p2=document.getElementById('panel'); p2.style.display='none';
   document.getElementById('headerBadge').style.display='none';
   document.getElementById('loginBreeder').value='';
   document.getElementById('loginErr').style.display='none';
