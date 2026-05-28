@@ -501,8 +501,11 @@ function openParentById(id){
         <div class="detail-row"><span>브리더</span><span>${a.owner_label}</span></div>
       </div>
       ${kidsHtml}
-      <button class="close-btn" onclick="closeDetail()">닫기</button>
-    </div>`;
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="close-btn" style="flex:1" onclick="closeDetail()">닫기</button>
+        <button class="close-btn" style="flex:1;background:#000;color:#fff" onclick="location.href='/genealogy.html?id=${a.id}&type=parent'">🌿 가계도</button>
+      </div>
+    </div>\`;
   document.getElementById('detailModal').classList.add('open');
 }
 
@@ -562,8 +565,11 @@ function openHatchDetail(id){
         <div class="detail-row"><span>브리더</span><span>${h.owner_label}</span></div>
       </div>
       ${dadHtml||momHtml?`<div class="sec-title">부모 개체</div>${dadHtml}${momHtml}`:''}
-      <button class="close-btn" onclick="closeDetail()">닫기</button>
-    </div>`;
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="close-btn" style="flex:1" onclick="closeDetail()">닫기</button>
+        <button class="close-btn" style="flex:1;background:#000;color:#fff" onclick="location.href='/genealogy.html?id=${h.id}&type=hatch'">🌿 가계도</button>
+      </div>
+    </div>\`;
   document.getElementById('detailModal').classList.add('open');
 }
 
