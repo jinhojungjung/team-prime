@@ -34,9 +34,13 @@
 const SB='https://yoiytrwuojrgvjwsywlt.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
 
-let allAnimals=[], allHatchlings=[], focusId=null, focusType=null;
+let allAnimals=[], allHatchlings=[];
 
-const NW=160, NH=58, HGAP=16, VGAP=70;
+const NW=148, NH=60;
+const PAD=16;
+const HGAP=12;
+const VGAP=70;
+const COUPLE_GAP=40; // 커플 블록 간 수직 간격
 
 async function get(path){
   const r=await fetch(SB+'/rest/v1/'+path,{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
@@ -45,251 +49,162 @@ async function get(path){
 
 async function init(){
   const p=new URLSearchParams(location.search);
-  focusId=p.get('id'); focusType=p.get('type')||'parent';
+  const focusId=p.get('id');
+  const focusType=p.get('type')||'parent';
   const [a,h]=await Promise.all([
     get('animals?select=id,name,code,morph,gender,owner_label&order=name.asc'),
     get('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date&order=hatch_date.asc')
   ]);
   allAnimals=a; allHatchlings=h;
-  if(!focusId){ show('<div class="empty">개체 정보가 없습니다</div>'); return; }
-  const focus=focusType==='parent'?allAnimals.find(x=>x.id===focusId):allHatchlings.find(x=>x.id===focusId);
-  if(!focus){ show('<div class="empty">개체를 찾을 수 없습니다</div>'); return; }
-  document.getElementById('headerTitle').textContent=focusType==='parent'?focus.name:focus.code;
-  buildTree(focus);
-}
-
-function show(html){ document.getElementById('canvasWrap').innerHTML=html; }
-
-function nc(type, gender, isFocus){
-  if(isFocus) return {fill:'#fff7e6',stroke:'#f5a623',sw:2.5,tc:'#a06000'};
-  if(type==='hatch') return {fill:'#f5f5f5',stroke:'#999',sw:1,tc:'#444'};
-  if(gender==='수컷') return {fill:'#e8f0fe',stroke:'#4a7cf7',sw:1,tc:'#2a5cd4'};
-  if(gender==='암컷') return {fill:'#fce8f3',stroke:'#e06faa',sw:1,tc:'#c0427e'};
-  return {fill:'#f5f5f5',stroke:'#999',sw:1,tc:'#444'};
-}
-
-function addNode(svg, x, y, data, type, isFocus){
-  const c=nc(type, data.gender, isFocus);
-  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-  g.style.cursor='pointer';
-  g.addEventListener('click',()=>showInfo(data,type));
-
-  const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-  rect.setAttribute('x',x); rect.setAttribute('y',y);
-  rect.setAttribute('width',NW); rect.setAttribute('height',NH);
-  rect.setAttribute('rx','10'); rect.setAttribute('fill',c.fill);
-  rect.setAttribute('stroke',c.stroke); rect.setAttribute('stroke-width',c.sw);
-  g.appendChild(rect);
-
-  const label=type==='parent'?data.name:data.code;
-  const morph=data.morph||'';
-  const sub=type==='parent'?(data.gender?data.gender+' · ':'')+data.owner_label:data.owner_label||'';
-
-  const t=(txt,dy,sz,fw,op)=>{
-    if(!txt) return;
-    const el=document.createElementNS('http://www.w3.org/2000/svg','text');
-    el.setAttribute('x',x+NW/2); el.setAttribute('y',y+dy);
-    el.setAttribute('text-anchor','middle'); el.setAttribute('font-size',sz);
-    el.setAttribute('font-weight',fw); el.setAttribute('fill',c.tc);
-    el.setAttribute('font-family','inherit'); el.setAttribute('opacity',op);
-    const max=Math.floor(NW/sz*1.7);
-    el.textContent=txt.length>max?txt.slice(0,max-1)+'…':txt;
-    g.appendChild(el);
-  };
-  t(label,20,13,'700','1');
-  t(morph,35,11,'400','0.85');
-  t(sub,49,10,'400','0.65');
-  svg.appendChild(g);
-}
-
-function addLine(svg,x1,y1,x2,y2,dash){
-  const l=document.createElementNS('http://www.w3.org/2000/svg','line');
-  l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
-  l.setAttribute('stroke','#ccc');l.setAttribute('stroke-width','1.5');
-  if(dash) l.setAttribute('stroke-dasharray','5,4');
-  svg.insertBefore(l,svg.firstChild.nextSibling);
-}
-
-function addElbow(svg,fromX,fromY,toX,toY){
-  const mid=(fromY+toY)/2;
-  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
-  p.setAttribute('d','M'+fromX+' '+fromY+' L'+fromX+' '+mid+' L'+toX+' '+mid+' L'+toX+' '+toY);
-  p.setAttribute('fill','none');p.setAttribute('stroke','#ccc');p.setAttribute('stroke-width','1.5');
-  svg.insertBefore(p,svg.firstChild.nextSibling);
-}
-
-function mkSVG(w,h){
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('width',w); svg.setAttribute('height',h);
-  svg.setAttribute('viewBox','0 0 '+w+' '+h);
-  svg.style.display='block'; svg.style.margin='0 auto';
-  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
-  svg.appendChild(defs);
-  return svg;
-}
-
-function buildTree(focus){
+  if(!focusId){ mount('<div class="empty">개체 정보가 없습니다</div>'); return; }
   if(focusType==='parent'){
-    buildParentTree(focus);
+    const focus=allAnimals.find(x=>x.id===focusId);
+    if(!focus){ mount('<div class="empty">개체를 찾을 수 없습니다</div>'); return; }
+    document.getElementById('headerTitle').textContent=focus.name;
+    drawParentTree(focus);
   } else {
-    buildHatchTree(focus);
+    const focus=allHatchlings.find(x=>x.id===focusId);
+    if(!focus){ mount('<div class="empty">개체를 찾을 수 없습니다</div>'); return; }
+    document.getElementById('headerTitle').textContent=focus.code;
+    drawHatchTree(focus);
   }
 }
 
-function buildParentTree(focus){
+// ── 부모 개체 기준 ────────────────────────────────
+// 커플별로 세로로 쌓기
+// 각 커플 블록:
+//   [파트너] ─── [기준(복사)]
+//                    │
+//              해칭1, 해칭2, ...
+function drawParentTree(focus){
+  const myKids=allHatchlings.filter(h=>h.father_id===focus.id||h.mother_id===focus.id);
+
   // 커플 그룹핑
-  const myHatchlings=allHatchlings.filter(h=>h.father_id===focus.id||h.mother_id===focus.id);
   const coupleMap={};
-  myHatchlings.forEach(h=>{
+  myKids.forEach(h=>{
     const pid=h.father_id===focus.id?h.mother_id:h.father_id;
-    const key=pid||'none';
+    const key=pid||'__none__';
     if(!coupleMap[key]) coupleMap[key]={pid,kids:[]};
     coupleMap[key].kids.push(h);
   });
   const couples=Object.values(coupleMap);
 
-  // 커플 없으면 단독
+  // 해칭 없으면 단독
   if(!couples.length){
-    const svgW=NW+40;
-    const svgH=NH+40;
+    const svgW=NW+PAD*2;
+    const svgH=NH+PAD*2;
     const svg=mkSVG(svgW,svgH);
-    addNode(svg,20,20,focus,'parent',true);
+    addNode(svg,PAD,PAD,focus,'parent',true);
     mount(svg); return;
   }
 
-  // 전체 레이아웃 계산
-  // 각 커플 블록 너비: partner노드 + 기준노드 + 해칭들
-  // 기준 개체는 커플마다 공유 → 가운데 고정
-  // 레이아웃: [partner1] [FOCUS] [partner2] ...
-  // 해칭은 각 파트너-기준 중점 아래
+  // 각 커플 블록 높이 계산
+  // 블록 = 위행(NH) + VGAP + 아래행(NH 해칭들)  or 해칭없으면 위행만
+  const blockHeights=couples.map(c=>c.kids.length>0?NH+VGAP+NH:NH);
 
-  const COUPLE_GAP=40; // 커플 간 간격
+  // SVG 전체 높이
+  const totalH=PAD+blockHeights.reduce((a,b)=>a+b,0)+COUPLE_GAP*(couples.length-1)+PAD;
 
-  // 파트너 목록
-  const partners=couples.map(c=>c.pid?allAnimals.find(a=>a.id===c.pid):null);
+  // SVG 너비: 파트너 + 간격 + 기준 or 해칭들 중 큰 것
+  const maxKidsW=Math.max(...couples.map(c=>c.kids.length*(NW+HGAP)-HGAP));
+  const svgW=Math.max(NW*2+HGAP*4, maxKidsW)+PAD*2;
 
-  // 기준 개체 가운데 고정
-  // 전체 너비: 왼쪽파트너들 + 기준 + 오른쪽파트너들
-  const leftCount=Math.floor(couples.length/2);
-  const rightCount=couples.length-leftCount;
+  const svg=mkSVG(svgW, totalH);
 
-  // 각 파트너 위치 계산
-  // 기준 개체 X
-  const focusX=(leftCount*(NW+COUPLE_GAP));
-  const totalTopW=focusX+NW+(rightCount*(NW+COUPLE_GAP));
-  const svgW=Math.max(totalTopW+20, couples.reduce((a,c)=>a+Math.max(c.kids.length,1)*(NW+HGAP),0)+40);
-
-  // 실제 SVG 너비: 위 행(파트너+기준) vs 아래 행(해칭들) 중 큰 것
-  const kidsTotalW=couples.reduce((acc,c)=>acc+Math.max(c.kids.length,1)*(NW+HGAP),0)+COUPLE_GAP*(couples.length-1);
-  const finalW=Math.max(svgW, kidsTotalW+40);
-
-  // Y positions
-  const row1Y=20;
-  const row2Y=row1Y+NH+VGAP;
-  const hasKids=myHatchlings.length>0;
-  const finalH=hasKids?row2Y+NH+30:row1Y+NH+30;
-
-  const svg=mkSVG(finalW, finalH);
-
-  // 기준 개체 위치 (중앙)
-  const focusCX=finalW/2;
-  const focusDrawX=focusCX-NW/2;
-  addNode(svg, focusDrawX, row1Y, focus, 'parent', true);
-
-  // 해칭 전체 너비 계산해서 균등 배치
-  let kidsOffset=20;
+  // 커플별 블록 그리기
+  let curY=PAD;
   couples.forEach((couple,ci)=>{
     const partner=couple.pid?allAnimals.find(a=>a.id===couple.pid):null;
-    const kidsCount=Math.max(couple.kids.length,0);
-    const coupleKidsW=kidsCount*(NW+HGAP)-HGAP;
+    const blockH=blockHeights[ci];
+    const rowY=curY;
+    const kidsY=rowY+NH+VGAP;
 
-    // 파트너 위치: 기준 개체 왼쪽/오른쪽 번갈아
-    let partnerX;
-    if(ci%2===0){
-      // 왼쪽
-      partnerX=focusDrawX-(NW+COUPLE_GAP)*(Math.floor(ci/2)+1);
-    } else {
-      // 오른쪽
-      partnerX=focusDrawX+(NW+COUPLE_GAP)*(Math.floor(ci/2)+1);
-    }
+    // 파트너 + 기준 가로 배치
+    // 기준은 오른쪽, 파트너는 왼쪽
+    const focusX=svgW-PAD-NW;
+    const focusCX=focusX+NW/2;
+    const partnerX=PAD;
+    const partnerCX=partnerX+NW/2;
+
+    // 기준 개체 (매 커플마다)
+    addNode(svg, focusX, rowY, focus, 'parent', true);
 
     if(partner){
-      addNode(svg, partnerX, row1Y, partner, 'parent', false);
-      const partnerCX=partnerX+NW/2;
-      const lineY=row1Y+NH/2;
-      // 파트너 ─── 기준 수평 연결선
-      const leftX=Math.min(partnerCX,focusCX);
-      const rightX=Math.max(partnerCX,focusCX);
-      addLine(svg, leftX, lineY, rightX, lineY, true);
+      addNode(svg, partnerX, rowY, partner, 'parent', false);
+      // 파트너 ─── 기준 연결선 (수평 점선)
+      const lineY=rowY+NH/2;
+      addLine(svg, partnerX+NW, lineY, focusX, lineY, true);
       // 중점에서 아래로
       const midX=(partnerCX+focusCX)/2;
       if(couple.kids.length>0){
-        addLine(svg, midX, lineY, midX, row2Y, false);
-        // 해칭들
-        const kidsStartX=midX-coupleKidsW/2;
-        couple.kids.forEach((h,i)=>{
-          const kx=kidsStartX+i*(NW+HGAP);
-          addNode(svg, kx, row2Y, h, 'hatch', false);
-          if(couple.kids.length>1){
-            addElbow(svg, midX, row2Y, kx+NW/2, row2Y);
-          }
-        });
+        addLine(svg, midX, lineY, midX, kidsY, false);
+        drawKids(svg, couple.kids, midX, kidsY);
       }
     } else {
       // 파트너 없음 → 기준에서 바로 아래
       if(couple.kids.length>0){
-        addLine(svg, focusCX, row1Y+NH, focusCX, row2Y, false);
-        const kidsStartX=focusCX-coupleKidsW/2;
-        couple.kids.forEach((h,i)=>{
-          const kx=kidsStartX+i*(NW+HGAP);
-          addNode(svg, kx, row2Y, h, 'hatch', false);
-          if(couple.kids.length>1){
-            addElbow(svg, focusCX, row2Y, kx+NW/2, row2Y);
-          }
-        });
+        addLine(svg, focusCX, rowY+NH, focusCX, kidsY, false);
+        drawKids(svg, couple.kids, focusCX, kidsY);
       }
     }
-    kidsOffset+=coupleKidsW+COUPLE_GAP;
+
+    curY+=blockH+COUPLE_GAP;
+
+    // 커플 구분선 (마지막 제외)
+    if(ci<couples.length-1){
+      const divY=curY-COUPLE_GAP/2;
+      const div=document.createElementNS('http://www.w3.org/2000/svg','line');
+      div.setAttribute('x1',PAD); div.setAttribute('y1',divY);
+      div.setAttribute('x2',svgW-PAD); div.setAttribute('y2',divY);
+      div.setAttribute('stroke','#eee'); div.setAttribute('stroke-width','1');
+      div.setAttribute('stroke-dasharray','4,4');
+      svg.appendChild(div);
+    }
   });
 
   mount(svg);
 }
 
-function buildHatchTree(focus){
-  const h=focus;
-  const father=allAnimals.find(a=>a.id===h.father_id);
-  const mother=allAnimals.find(a=>a.id===h.mother_id);
+function drawKids(svg, kids, midX, kidsY){
+  const kidsW=kids.length*(NW+HGAP)-HGAP;
+  const kidsStartX=midX-kidsW/2;
+  kids.forEach((h,i)=>{
+    const kx=kidsStartX+i*(NW+HGAP);
+    addNode(svg, kx, kidsY, h, 'hatch', false);
+    if(kids.length===1){
+      // 직선
+    } else {
+      // 엘보우
+      addElbow(svg, midX, kidsY, kx+NW/2, kidsY);
+    }
+  });
+}
 
-  // 자식들
-  const kids=allHatchlings.filter(g=>g.father_id===h.id||g.mother_id===h.id);
+// ── 해칭 기준 ─────────────────────────────────────
+function drawHatchTree(focus){
+  const father=allAnimals.find(a=>a.id===focus.father_id);
+  const mother=allAnimals.find(a=>a.id===focus.mother_id);
+  const kids=allHatchlings.filter(g=>g.father_id===focus.id||g.mother_id===focus.id);
 
-  const hasBothParents=father&&mother;
-  const hasOneParent=father||mother;
-
-  // 너비 계산
-  const parentRowW=hasBothParents?NW*2+HGAP*4:NW+40;
-  const kidsRowW=kids.length>0?kids.length*(NW+HGAP)-HGAP:0;
-  const finalW=Math.max(parentRowW, kidsRowW, NW)+80;
-
-  const row1Y=20;
+  const row1Y=PAD;
   const row2Y=row1Y+NH+VGAP;
   const row3Y=row2Y+NH+VGAP;
   const hasKids=kids.length>0;
-  const finalH=hasKids?row3Y+NH+30:row2Y+NH+30;
+  const svgH=row2Y+NH+(hasKids?VGAP+NH:0)+PAD;
 
-  const svg=mkSVG(finalW, finalH);
-  const cx=finalW/2;
+  const kidsW=hasKids?kids.length*(NW+HGAP)-HGAP:0;
+  const svgW=Math.max(NW*2+HGAP*4, kidsW)+PAD*2;
+  const cx=svgW/2;
 
-  if(hasBothParents){
-    // 부 왼쪽, 모 오른쪽 균등 배치
-    const fatherX=cx-NW-HGAP*2;
-    const motherX=cx+HGAP*2;
-    addNode(svg, fatherX, row1Y, father, 'parent', false);
-    addNode(svg, motherX, row1Y, mother, 'parent', false);
+  const svg=mkSVG(svgW, svgH);
+
+  if(father&&mother){
+    const fX=cx-NW-HGAP*2;
+    const mX=cx+HGAP*2;
+    addNode(svg, fX, row1Y, father, 'parent', false);
+    addNode(svg, mX, row1Y, mother, 'parent', false);
     const lineY=row1Y+NH/2;
-    // 부모 연결선
-    addLine(svg, fatherX+NW, lineY, motherX, lineY, true);
-    // 중점 → 아래
+    addLine(svg, fX+NW, lineY, mX, lineY, true);
     addLine(svg, cx, lineY, cx, row2Y, false);
   } else if(father){
     addNode(svg, cx-NW/2, row1Y, father, 'parent', false);
@@ -299,31 +214,86 @@ function buildHatchTree(focus){
     addLine(svg, cx, row1Y+NH, cx, row2Y, false);
   }
 
-  // 기준 해칭
-  addNode(svg, cx-NW/2, row2Y, h, 'hatch', true);
+  addNode(svg, cx-NW/2, row2Y, focus, 'hatch', true);
 
-  // 자식들
   if(hasKids){
     addLine(svg, cx, row2Y+NH, cx, row3Y, false);
-    const kidsW=kids.length*(NW+HGAP)-HGAP;
-    const kidsStartX=cx-kidsW/2;
-    kids.forEach((k,i)=>{
-      const kx=kidsStartX+i*(NW+HGAP);
-      addNode(svg, kx, row3Y, k, 'hatch', false);
-      if(kids.length>1) addElbow(svg, cx, row3Y, kx+NW/2, row3Y);
-    });
+    drawKids(svg, kids, cx, row3Y);
   }
 
   mount(svg);
 }
 
-function mount(svg){
-  const wrap=document.getElementById('canvasWrap');
-  wrap.innerHTML='';
-  wrap.appendChild(svg);
+// ── SVG 헬퍼 ──────────────────────────────────────
+function mkSVG(w,h){
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',w); svg.setAttribute('height',h);
+  svg.setAttribute('viewBox','0 0 '+w+' '+h);
+  svg.style.display='block'; svg.style.margin='0 auto';
+  return svg;
 }
 
-function showInfo(data, type){
+function addNode(svg,x,y,data,type,isFocus){
+  let fill,stroke,sw,tc;
+  if(isFocus){fill='#fff7e6';stroke='#f5a623';sw=2.5;tc='#a06000';}
+  else if(type==='hatch'){fill='#f5f5f5';stroke='#aaa';sw=1;tc='#444';}
+  else if(data.gender==='수컷'){fill='#e8f0fe';stroke='#4a7cf7';sw=1;tc='#2a5cd4';}
+  else if(data.gender==='암컷'){fill='#fce8f3';stroke='#e06faa';sw=1;tc='#c0427e';}
+  else{fill='#f5f5f5';stroke='#aaa';sw=1;tc='#444';}
+
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.style.cursor='pointer';
+  g.addEventListener('click',()=>showInfo(data,type));
+
+  const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x',x);rect.setAttribute('y',y);
+  rect.setAttribute('width',NW);rect.setAttribute('height',NH);
+  rect.setAttribute('rx','10');rect.setAttribute('fill',fill);
+  rect.setAttribute('stroke',stroke);rect.setAttribute('stroke-width',sw);
+  g.appendChild(rect);
+
+  const cx=x+NW/2;
+  const label=type==='parent'?data.name:data.code;
+  const morph=data.morph||'';
+  const sub=type==='parent'?(data.gender?data.gender+' · ':'')+data.owner_label:(data.owner_label||'');
+
+  [[label,20,13,'700','1'],[morph,36,11,'400','0.9'],[sub,50,10,'400','0.7']].forEach(([txt,dy,sz,fw,op])=>{
+    if(!txt) return;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx);t.setAttribute('y',y+dy);
+    t.setAttribute('text-anchor','middle');t.setAttribute('font-size',sz);
+    t.setAttribute('font-weight',fw);t.setAttribute('fill',tc);
+    t.setAttribute('font-family','-apple-system,sans-serif');t.setAttribute('opacity',op);
+    const max=Math.floor(NW/sz*1.6);
+    t.textContent=txt.length>max?txt.slice(0,max-1)+'…':txt;
+    g.appendChild(t);
+  });
+  svg.appendChild(g);
+}
+
+function addLine(svg,x1,y1,x2,y2,dash){
+  const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+  l.setAttribute('stroke','#ccc');l.setAttribute('stroke-width','1.5');
+  if(dash) l.setAttribute('stroke-dasharray','5,4');
+  svg.insertBefore(l,svg.firstChild);
+}
+
+function addElbow(svg,fromX,fromY,toX,toY){
+  const mid=(fromY+toY)/2;
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d','M'+fromX+','+fromY+' L'+fromX+','+mid+' L'+toX+','+mid+' L'+toX+','+toY);
+  p.setAttribute('fill','none');p.setAttribute('stroke','#ccc');p.setAttribute('stroke-width','1.5');
+  svg.insertBefore(p,svg.firstChild);
+}
+
+function mount(content){
+  const w=document.getElementById('canvasWrap');
+  if(typeof content==='string') w.innerHTML=content;
+  else{ w.innerHTML=''; w.appendChild(content); }
+}
+
+function showInfo(data,type){
   const el=document.getElementById('infoPanel');
   if(type==='parent'){
     const kids=allHatchlings.filter(h=>h.father_id===data.id||h.mother_id===data.id);
