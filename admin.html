@@ -137,6 +137,8 @@ body{background:#f2f2f2}
           <label>성별</label>
           <select id="aGender"><option value="">선택 안 함</option><option value="수컷">수컷</option><option value="암컷">암컷</option><option value="미구분">미구분</option></select>
         </div>
+        <div class="field"><label>부 (선택)</label><select id="aFather"><option value="">선택 안 함</option></select></div>
+        <div class="field"><label>모 (선택)</label><select id="aMother"><option value="">선택 안 함</option></select></div>
         <div class="field"><label>모프</label><div class="morph-grid" id="morphGrid"></div></div>
         <div class="field">
           <label>사진 (최대 2장)</label>
@@ -323,6 +325,8 @@ body{background:#f2f2f2}
       <label>성별</label>
       <select id="editGender"><option value="">선택 안 함</option><option value="수컷">수컷</option><option value="암컷">암컷</option><option value="미구분">미구분</option></select>
     </div>
+    <div class="field"><label>부 (선택)</label><select id="editFather"><option value="">선택 안 함</option></select></div>
+    <div class="field"><label>모 (선택)</label><select id="editMother"><option value="">선택 안 함</option></select></div>
     <div class="field"><label>모프</label><div class="morph-grid" id="editMorphGrid"></div></div>
     <div class="field">
       <label>사진 교체</label>
@@ -445,11 +449,18 @@ function pickMorph(name,el,type){
 
 async function loadAnimals(){
   try{
-    animals=await api('animals?select=id,name,code,gender,owner_id,owner_label&order=name.asc');
+    animals=await api('animals?select=id,name,code,gender,owner_id,owner_label,father_id,mother_id&order=name.asc');
     const males=animals.filter(a=>a.gender==='수컷');
     const females=animals.filter(a=>a.gender==='암컷');
-    document.getElementById('hFather').innerHTML='<option value="">선택</option>'+males.map(a=>'<option value="'+a.id+'" data-code="'+(a.code||'')+'" data-owner="'+(a.owner_id||'')+'" data-label="'+(a.owner_label||'')+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
-    document.getElementById('hMother').innerHTML='<option value="">선택</option>'+females.map(a=>'<option value="'+a.id+'" data-code="'+(a.code||'')+'" data-owner="'+(a.owner_id||'')+'" data-label="'+(a.owner_label||'')+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
+    const allOpts='<option value="">선택 안 함</option>'+animals.map(a=>'<option value="'+a.id+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
+    const maleOpts='<option value="">선택</option>'+males.map(a=>'<option value="'+a.id+'" data-code="'+(a.code||'')+'" data-owner="'+(a.owner_id||'')+'" data-label="'+(a.owner_label||'')+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
+    const femaleOpts='<option value="">선택</option>'+females.map(a=>'<option value="'+a.id+'" data-code="'+(a.code||'')+'" data-owner="'+(a.owner_id||'')+'" data-label="'+(a.owner_label||'')+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
+    document.getElementById('hFather').innerHTML=maleOpts;
+    document.getElementById('hMother').innerHTML=femaleOpts;
+    document.getElementById('aFather').innerHTML=allOpts;
+    document.getElementById('aMother').innerHTML=allOpts;
+    document.getElementById('editFather').innerHTML=allOpts;
+    document.getElementById('editMother').innerHTML=allOpts;
   }catch(e){}
 }
 
@@ -515,7 +526,9 @@ async function saveAnimal(){
     let u1=null,u2=null;
     if(pendingF[0])u1=await r2up(pendingF[0],me+'_'+ts+'_1.'+pendingF[0].name.split('.').pop());
     if(pendingF[1])u2=await r2up(pendingF[1],me+'_'+ts+'_2.'+pendingF[1].name.split('.').pop());
-    await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:selMorph||null,image_url:u1,image_url_2:u2,owner_id:me,owner_label:BREEDERS[me]})});
+    const fid=document.getElementById('aFather').value||null;
+    const mid=document.getElementById('aMother').value||null;
+    await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:selMorph||null,image_url:u1,image_url_2:u2,owner_id:me,owner_label:BREEDERS[me],father_id:fid,mother_id:mid})});
     ok.style.display='block';
     document.getElementById('aName').value='';document.getElementById('aCode').value='';document.getElementById('aGender').value='';
     document.querySelectorAll('#morphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
@@ -593,6 +606,10 @@ function openEdit(id){
   document.getElementById('editGender').value=a.gender||'';
   buildMorphGrid('editMorphGrid','e');
   if(a.morph)setTimeout(()=>document.querySelectorAll('#editMorphGrid .morph-chip').forEach(c=>{if(c.textContent===a.morph)c.classList.add('selected');}),50);
+  setTimeout(()=>{
+    if(a.father_id)document.getElementById('editFather').value=a.father_id;
+    if(a.mother_id)document.getElementById('editMother').value=a.mother_id;
+  },100);
   [0,1].forEach(i=>{
     const url=i===0?a.image_url:a.image_url_2;
     document.getElementById('eph'+i).innerHTML=url?'<img src="'+url+'" class="upload-preview"><div class="upload-label">사진 '+(i+1)+' (기존)</div>':'<div style="font-size:22px">📷</div><div class="upload-label">사진 '+(i+1)+'</div>';
@@ -615,7 +632,9 @@ async function submitEdit(){
     let u1=editUrls[0],u2=editUrls[1];
     if(editF[0])u1=await r2up(editF[0],me+'_'+ts+'_1.'+editF[0].name.split('.').pop());
     if(editF[1])u2=await r2up(editF[1],me+'_'+ts+'_2.'+editF[1].name.split('.').pop());
-    await api('animals?id=eq.'+id,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:u1,image_url_2:u2})});
+    const efid=document.getElementById('editFather').value||null;
+    const emid=document.getElementById('editMother').value||null;
+    await api('animals?id=eq.'+id,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:u1,image_url_2:u2,father_id:efid,mother_id:emid})});
     ok.style.display='block';
     setTimeout(()=>{ok.style.display='none';closeEdit();renderAnimalList();},1500);
   }catch(e){err.textContent='수정 실패: '+e.message;err.style.display='block';}
