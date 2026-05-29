@@ -23,7 +23,9 @@
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><div style="width:10px;height:10px;border-radius:2px;background:#f5a623;flex-shrink:0"></div>기준</div>
   </div>
   <div class="canvas-wrap" id="canvasWrap">
-    <div class="loading">가계도 불러오는 중...</div>
+    <div class="canvas-inner" id="canvasInner">
+      <div class="loading">가계도 불러오는 중...</div>
+    </div>
   </div>
   <div id="infoPanel" style="border-top:1px solid #000;padding:14px 16px;background:#fff;min-height:72px">
     <div style="color:#bbb;font-size:13px">노드를 탭해서 정보를 확인하세요</div>
@@ -102,6 +104,10 @@ function drawParentTree(focus){
     const cx=svgW/2;
     if(hasParents){
       drawParentRow(svg, focusFather, focusMother, svgW, PAD);
+      // 부모 중점에서 기준 개체로 연결
+      const fX=focusFather&&focusMother?cx-NW-HGAP*2:cx-NW/2;
+      const mX=focusFather&&focusMother?cx+HGAP*2:cx-NW/2;
+      const lineY=PAD+NH/2;
       addLine(svg, cx, PAD+NH, cx, PAD+NH+VGAP, false);
       addNode(svg, cx-NW/2, PAD+NH+VGAP, focus, 'parent', true);
     } else {
@@ -127,7 +133,10 @@ function drawParentTree(focus){
 
   // 위 세대 부모 그리기
   if(hasParents){
+    const cx=svgW/2;
     drawParentRow(svg, focusFather, focusMother, svgW, PAD);
+    // drawParentRow에서 NH까지 선 그림 → 나머지 VGAP만큼 추가
+    addLine(svg, cx, PAD+NH+(focusFather&&focusMother?NH/2:NH), cx, PAD+parentRowH, false);
   }
 
   // 커플별 블록 그리기
@@ -207,11 +216,16 @@ function drawParentRow(svg, father, mother, svgW, y){
     const mX=cx+HGAP*2;
     addNode(svg, fX, y, father, 'parent', false);
     addNode(svg, mX, y, mother, 'parent', false);
+    // 부모 수평 점선 연결
     addLine(svg, fX+NW, y+NH/2, mX, y+NH/2, true);
+    // 중점에서 아래로 연결선
+    addLine(svg, cx, y+NH/2, cx, y+NH, false);
   } else if(father){
     addNode(svg, cx-NW/2, y, father, 'parent', false);
+    addLine(svg, cx, y+NH, cx, y+NH+(NH/2), false);
   } else if(mother){
     addNode(svg, cx-NW/2, y, mother, 'parent', false);
+    addLine(svg, cx, y+NH, cx, y+NH+(NH/2), false);
   }
 }
 
@@ -323,9 +337,59 @@ function addElbow(svg,fromX,fromY,toX,toY){
 }
 
 function mount(content){
-  const w=document.getElementById('canvasWrap');
-  if(typeof content==='string') w.innerHTML=content;
-  else{ w.innerHTML=''; w.appendChild(content); }
+  const inner=document.getElementById('canvasInner');
+  if(typeof content==='string') inner.innerHTML=content;
+  else{ inner.innerHTML=''; inner.appendChild(content); }
+  // 초기 위치 중앙 정렬
+  const wrap=document.getElementById('canvasWrap');
+  const svgEl=inner.querySelector('svg');
+  if(svgEl){
+    const ww=wrap.clientWidth;
+    const sw=svgEl.getAttribute('width');
+    offsetX=sw<ww?(ww-sw)/2:20;
+    offsetY=20;
+    inner.style.transform='translate('+offsetX+'px,'+offsetY+'px)';
+  }
+  setupDrag();
+}
+
+let offsetX=20,offsetY=20,startX=0,startY=0,isDragging=false;
+
+function setupDrag(){
+  const wrap=document.getElementById('canvasWrap');
+  const inner=document.getElementById('canvasInner');
+
+  // 터치
+  wrap.ontouchstart=e=>{
+    isDragging=true;
+    startX=e.touches[0].clientX-offsetX;
+    startY=e.touches[0].clientY-offsetY;
+    wrap.classList.add('dragging');
+  };
+  wrap.ontouchmove=e=>{
+    if(!isDragging)return;
+    e.preventDefault();
+    offsetX=e.touches[0].clientX-startX;
+    offsetY=e.touches[0].clientY-startY;
+    inner.style.transform='translate('+offsetX+'px,'+offsetY+'px)';
+  };
+  wrap.ontouchend=()=>{isDragging=false;wrap.classList.remove('dragging');};
+
+  // 마우스
+  wrap.onmousedown=e=>{
+    isDragging=true;
+    startX=e.clientX-offsetX;
+    startY=e.clientY-offsetY;
+    wrap.classList.add('dragging');
+  };
+  wrap.onmousemove=e=>{
+    if(!isDragging)return;
+    offsetX=e.clientX-startX;
+    offsetY=e.clientY-startY;
+    inner.style.transform='translate('+offsetX+'px,'+offsetY+'px)';
+  };
+  wrap.onmouseup=()=>{isDragging=false;wrap.classList.remove('dragging');};
+  wrap.onmouseleave=()=>{isDragging=false;wrap.classList.remove('dragging');};
 }
 
 function showInfo(data,type){
