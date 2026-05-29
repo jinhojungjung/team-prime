@@ -103,11 +103,7 @@ function drawParentTree(focus){
     const svg=mkSVG(svgW,svgH);
     const cx=svgW/2;
     if(hasParents){
-      drawParentRow(svg, focusFather, focusMother, svgW, PAD);
-      // 부모 중점에서 기준 개체로 연결
-      const fX=focusFather&&focusMother?cx-NW-HGAP*2:cx-NW/2;
-      const mX=focusFather&&focusMother?cx+HGAP*2:cx-NW/2;
-      const lineY=PAD+NH/2;
+      drawParentRow(svg, focusFather, focusMother, svgW, PAD, cx);
       addLine(svg, cx, PAD+NH, cx, PAD+NH+VGAP, false);
       addNode(svg, cx-NW/2, PAD+NH+VGAP, focus, 'parent', true);
     } else {
@@ -133,10 +129,12 @@ function drawParentTree(focus){
 
   // 위 세대 부모 그리기
   if(hasParents){
-    const cx=svgW/2;
-    drawParentRow(svg, focusFather, focusMother, svgW, PAD);
-    // drawParentRow에서 NH까지 선 그림 → 나머지 VGAP만큼 추가
-    addLine(svg, cx, PAD+NH+(focusFather&&focusMother?NH/2:NH), cx, PAD+parentRowH, false);
+    // 기준 개체의 실제 X 위치 계산
+    // 커플 블록에서 기준 개체는 오른쪽(focusX = svgW-PAD-NW)
+    const focusCX2=svgW-PAD-NW/2;
+    drawParentRow(svg, focusFather, focusMother, svgW, PAD, focusCX2);
+    // 연결선: drawParentRow 끝점 → 기준 개체 상단
+    addLine(svg, focusCX2, PAD+NH, focusCX2, PAD+parentRowH, false);
   }
 
   // 커플별 블록 그리기
@@ -209,16 +207,18 @@ function drawKids(svg, kids, midX, kidsY){
 }
 
 // ── 부모 행 그리기 헬퍼 ────────────────────────────
-function drawParentRow(svg, father, mother, svgW, y){
-  const cx=svgW/2;
+function drawParentRow(svg, father, mother, svgW, y, targetCX){
+  // targetCX: 기준 개체의 중심 X
+  const cx=targetCX||svgW/2;
   if(father&&mother){
+    // 부모를 기준 개체 중심 기준 좌우 배치
     const fX=cx-NW-HGAP*2;
     const mX=cx+HGAP*2;
     addNode(svg, fX, y, father, 'parent', false);
     addNode(svg, mX, y, mother, 'parent', false);
     // 부모 수평 점선 연결
     addLine(svg, fX+NW, y+NH/2, mX, y+NH/2, true);
-    // 중점에서 아래로 연결선
+    // 기준 개체 CX에서 아래로
     addLine(svg, cx, y+NH/2, cx, y+NH, false);
   } else if(father){
     addNode(svg, cx-NW/2, y, father, 'parent', false);
