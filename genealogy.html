@@ -235,39 +235,95 @@ function drawHatchTree(focus){
   const mother=allAnimals.find(a=>a.id===focus.mother_id);
   const kids=allHatchlings.filter(g=>g.father_id===focus.id||g.mother_id===focus.id);
 
-  const row1Y=PAD;
-  const row2Y=row1Y+NH+VGAP;
-  const row3Y=row2Y+NH+VGAP;
+  // 조부모 (부의 부모, 모의 부모)
+  const fFather=father&&father.father_id?allAnimals.find(a=>a.id===father.father_id):null;
+  const fMother=father&&father.mother_id?allAnimals.find(a=>a.id===father.mother_id):null;
+  const mFather=mother&&mother.father_id?allAnimals.find(a=>a.id===mother.father_id):null;
+  const mMother=mother&&mother.mother_id?allAnimals.find(a=>a.id===mother.mother_id):null;
+  const hasFGrand=fFather||fMother;
+  const hasMGrand=mFather||mMother;
+  const hasGrand=hasFGrand||hasMGrand;
+
+  // 행 Y 계산
+  const grandY=PAD;
+  const parentY=hasGrand?grandY+NH+VGAP:PAD;
+  const focusY=parentY+(father||mother?NH+VGAP:0);
+  const kidsY=focusY+NH+VGAP;
   const hasKids=kids.length>0;
-  const svgH=row2Y+NH+(hasKids?VGAP+NH:0)+PAD;
 
   const kidsW=hasKids?kids.length*(NW+HGAP)-HGAP:0;
-  const svgW=Math.max(NW*2+HGAP*4, kidsW)+PAD*2;
+  const svgW=Math.max(NW*3+HGAP*6, kidsW, hasGrand?NW*4+HGAP*8:0)+PAD*2;
+  const svgH=focusY+NH+(hasKids?VGAP+NH:0)+PAD;
   const cx=svgW/2;
 
   const svg=mkSVG(svgW, svgH);
 
+  // 조부모 행
+  if(hasGrand){
+    // 부의 부모 (왼쪽)
+    if(hasFGrand){
+      const fgCX=cx-NW-HGAP*3;
+      if(fFather&&fMother){
+        const ffX=fgCX-NW/2-HGAP;
+        const fmX=fgCX+HGAP;
+        addNode(svg, ffX, grandY, fFather, 'parent', false);
+        addNode(svg, fmX, grandY, fMother, 'parent', false);
+        addLine(svg, ffX+NW, grandY+NH/2, fmX, grandY+NH/2, true);
+        addLine(svg, fgCX, grandY+NH/2, fgCX, grandY+NH, false);
+      } else {
+        const gNode=fFather||fMother;
+        addNode(svg, fgCX-NW/2, grandY, gNode, 'parent', false);
+        addLine(svg, fgCX, grandY+NH, fgCX, grandY+NH+VGAP/2, false);
+      }
+      // 조부모 → 부 연결
+      const fatherCX=cx-NW-HGAP*2;
+      addLine(svg, fgCX, grandY+NH, fgCX, parentY, false);
+      addLine(svg, fgCX, parentY, fatherCX+NW/2, parentY, false);
+    }
+    // 모의 부모 (오른쪽)
+    if(hasMGrand){
+      const mgCX=cx+NW+HGAP*3;
+      if(mFather&&mMother){
+        const mfX=mgCX-NW/2-HGAP;
+        const mmX=mgCX+HGAP;
+        addNode(svg, mfX, grandY, mFather, 'parent', false);
+        addNode(svg, mmX, grandY, mMother, 'parent', false);
+        addLine(svg, mfX+NW, grandY+NH/2, mmX, grandY+NH/2, true);
+        addLine(svg, mgCX, grandY+NH/2, mgCX, grandY+NH, false);
+      } else {
+        const gNode=mFather||mMother;
+        addNode(svg, mgCX-NW/2, grandY, gNode, 'parent', false);
+      }
+      // 조부모 → 모 연결
+      const motherCX=cx+HGAP*2+NW/2;
+      addLine(svg, mgCX, grandY+NH, mgCX, parentY, false);
+      addLine(svg, mgCX, parentY, motherCX, parentY, false);
+    }
+  }
+
+  // 부모 행
   if(father&&mother){
     const fX=cx-NW-HGAP*2;
     const mX=cx+HGAP*2;
-    addNode(svg, fX, row1Y, father, 'parent', false);
-    addNode(svg, mX, row1Y, mother, 'parent', false);
-    const lineY=row1Y+NH/2;
-    addLine(svg, fX+NW, lineY, mX, lineY, true);
-    addLine(svg, cx, lineY, cx, row2Y, false);
+    addNode(svg, fX, parentY, father, 'parent', false);
+    addNode(svg, mX, parentY, mother, 'parent', false);
+    addLine(svg, fX+NW, parentY+NH/2, mX, parentY+NH/2, true);
+    addLine(svg, cx, parentY+NH/2, cx, focusY, false);
   } else if(father){
-    addNode(svg, cx-NW/2, row1Y, father, 'parent', false);
-    addLine(svg, cx, row1Y+NH, cx, row2Y, false);
+    addNode(svg, cx-NW/2, parentY, father, 'parent', false);
+    addLine(svg, cx, parentY+NH, cx, focusY, false);
   } else if(mother){
-    addNode(svg, cx-NW/2, row1Y, mother, 'parent', false);
-    addLine(svg, cx, row1Y+NH, cx, row2Y, false);
+    addNode(svg, cx-NW/2, parentY, mother, 'parent', false);
+    addLine(svg, cx, parentY+NH, cx, focusY, false);
   }
 
-  addNode(svg, cx-NW/2, row2Y, focus, 'hatch', true);
+  // 기준 해칭
+  addNode(svg, cx-NW/2, focusY, focus, 'hatch', true);
 
+  // 자식들
   if(hasKids){
-    addLine(svg, cx, row2Y+NH, cx, row3Y, false);
-    drawKids(svg, kids, cx, row3Y);
+    addLine(svg, cx, focusY+NH, cx, kidsY, false);
+    drawKids(svg, kids, cx, kidsY);
   }
 
   mount(svg);
