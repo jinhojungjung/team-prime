@@ -52,7 +52,7 @@ async function init(){
   const focusId=p.get('id');
   const focusType=p.get('type')||'parent';
   const [a,h]=await Promise.all([
-    get('animals?select=id,name,code,morph,gender,owner_label&order=name.asc'),
+    get('animals?select=id,name,code,morph,gender,owner_label,father_id,mother_id&order=name.asc'),
     get('hatchlings?select=id,code,morph,gender,father_id,mother_id,owner_label,hatch_date&order=hatch_date.asc')
   ]);
   allAnimals=a; allHatchlings=h;
@@ -89,21 +89,35 @@ function drawParentTree(focus){
   });
   const couples=Object.values(coupleMap);
 
-  // 해칭 없으면 단독
+  // 기준 개체의 부모 (위 세대)
+  const focusFather=focus.father_id?allAnimals.find(a=>a.id===focus.father_id):null;
+  const focusMother=focus.mother_id?allAnimals.find(a=>a.id===focus.mother_id):null;
+
+  // 해칭 없으면 단독 (부모는 있을 수 있음)
   if(!couples.length){
-    const svgW=NW+PAD*2;
-    const svgH=NH+PAD*2;
+    const hasParents=focusFather||focusMother;
+    const svgW=Math.max(NW*2+HGAP*4, NW)+PAD*2;
+    const svgH=hasParents?NH*2+VGAP+PAD*2:NH+PAD*2;
     const svg=mkSVG(svgW,svgH);
-    addNode(svg,PAD,PAD,focus,'parent',true);
+    const cx=svgW/2;
+    if(hasParents){
+      drawParentRow(svg, focusFather, focusMother, svgW, PAD);
+      addLine(svg, cx, PAD+NH, cx, PAD+NH+VGAP, false);
+      addNode(svg, cx-NW/2, PAD+NH+VGAP, focus, 'parent', true);
+    } else {
+      addNode(svg, PAD, PAD, focus, 'parent', true);
+    }
     mount(svg); return;
   }
 
   // 각 커플 블록 높이 계산
   // 블록 = 위행(NH) + VGAP + 아래행(NH 해칭들)  or 해칭없으면 위행만
   const blockHeights=couples.map(c=>c.kids.length>0?NH+VGAP+NH:NH);
+  const hasParents=focusFather||focusMother;
+  const parentRowH=hasParents?NH+VGAP:0;
 
   // SVG 전체 높이
-  const totalH=PAD+blockHeights.reduce((a,b)=>a+b,0)+COUPLE_GAP*(couples.length-1)+PAD;
+  const totalH=PAD+parentRowH+blockHeights.reduce((a,b)=>a+b,0)+COUPLE_GAP*(couples.length-1)+PAD;
 
   // SVG 너비: 파트너 + 간격 + 기준 or 해칭들 중 큰 것
   const maxKidsW=Math.max(...couples.map(c=>c.kids.length*(NW+HGAP)-HGAP));
@@ -111,8 +125,13 @@ function drawParentTree(focus){
 
   const svg=mkSVG(svgW, totalH);
 
+  // 위 세대 부모 그리기
+  if(hasParents){
+    drawParentRow(svg, focusFather, focusMother, svgW, PAD);
+  }
+
   // 커플별 블록 그리기
-  let curY=PAD;
+  let curY=PAD+parentRowH;
   couples.forEach((couple,ci)=>{
     const partner=couple.pid?allAnimals.find(a=>a.id===couple.pid):null;
     const blockH=blockHeights[ci];
@@ -178,6 +197,22 @@ function drawKids(svg, kids, midX, kidsY){
       addElbow(svg, midX, kidsY, kx+NW/2, kidsY);
     }
   });
+}
+
+// ── 부모 행 그리기 헬퍼 ────────────────────────────
+function drawParentRow(svg, father, mother, svgW, y){
+  const cx=svgW/2;
+  if(father&&mother){
+    const fX=cx-NW-HGAP*2;
+    const mX=cx+HGAP*2;
+    addNode(svg, fX, y, father, 'parent', false);
+    addNode(svg, mX, y, mother, 'parent', false);
+    addLine(svg, fX+NW, y+NH/2, mX, y+NH/2, true);
+  } else if(father){
+    addNode(svg, cx-NW/2, y, father, 'parent', false);
+  } else if(mother){
+    addNode(svg, cx-NW/2, y, mother, 'parent', false);
+  }
 }
 
 // ── 해칭 기준 ─────────────────────────────────────
