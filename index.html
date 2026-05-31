@@ -90,6 +90,15 @@ async function patch(path,body){
   await fetch(SB+'/rest/v1/'+path,{method:'PATCH',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
 }
 
+// 이미지 리사이즈: 표시 크기에 맞게 작은 버전을 받아 속도를 높임
+// (Supabase Storage = 네이티브 변환, 그 외(R2 등) = weserv 무료 이미지 CDN)
+function rs(url,w){
+  if(!url) return url;
+  if(url.indexOf('/storage/v1/object/public/')>=0)
+    return url.replace('/object/public/','/render/image/public/')+(url.indexOf('?')<0?'?':'&')+'width='+w+'&quality=70';
+  return 'https://images.weserv.nl/?url='+encodeURIComponent(url.replace(/^https?:\/\//,''))+'&w='+w+'&q=70&output=webp';
+}
+
 async function init(){
   // 전체 데이터 한번에 (이미지 포함, 쿼리 2개만)
   const [a, h] = await Promise.all([
@@ -253,7 +262,7 @@ function renderMain(){
 }
 
 function parentCard(a){
-  const thumb=a.image_url?'<img data-src="'+a.image_url+'" alt="'+a.name+'" loading="lazy">':'<span style="font-size:28px">🦎</span>';
+  const thumb=a.image_url?'<img data-src="'+rs(a.image_url,200)+'" alt="'+a.name+'" loading="lazy" decoding="async">':'<span style="font-size:28px">🦎</span>';
   return '<div class="animal-card" onclick="openParent(\''+a.id+'\')"><div class="animal-thumb">'+thumb+'</div><div class="animal-info"><h3>'+a.name+'</h3>'+(a.code?'<div class="code-text">'+a.code+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+a.owner_label+'</span>'+(a.morph?'<span class="badge">'+a.morph+'</span>':'')+genderBadge(a.gender)+'</div></div>'+(a.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
 }
 
@@ -341,8 +350,8 @@ function renderPosts(){
 // ── 공통
 function heroHtml(photos){
   if(!photos.length) return '<div style="height:160px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:60px">🦎</div>';
-  if(photos.length===1) return '<div class="photo-slider"><img src="'+photos[0]+'" alt="사진" style="opacity:1"></div>';
-  return '<div class="photo-slider" id="slider"><img src="'+photos[0]+'" id="slide0" alt="사진1" style="opacity:1"><img src="'+photos[1]+'" id="slide1" alt="사진2" class="hidden"><button class="photo-nav prev" onclick="slide(-1)">&#8249;</button><button class="photo-nav next" onclick="slide(1)">&#8250;</button><div class="photo-dots"><div class="photo-dot active" id="dot0" onclick="goSlide(0)"></div><div class="photo-dot" id="dot1" onclick="goSlide(1)"></div></div></div>';
+  if(photos.length===1) return '<div class="photo-slider"><img src="'+rs(photos[0],800)+'" alt="사진" style="opacity:1"></div>';
+  return '<div class="photo-slider" id="slider"><img src="'+rs(photos[0],800)+'" id="slide0" alt="사진1" style="opacity:1"><img src="'+rs(photos[1],800)+'" id="slide1" alt="사진2" class="hidden"><button class="photo-nav prev" onclick="slide(-1)">&#8249;</button><button class="photo-nav next" onclick="slide(1)">&#8250;</button><div class="photo-dots"><div class="photo-dot active" id="dot0" onclick="goSlide(0)"></div><div class="photo-dot" id="dot1" onclick="goSlide(1)"></div></div></div>';
 }
 function slide(dir){goSlide(slideIdx+dir);}
 function goSlide(idx){
