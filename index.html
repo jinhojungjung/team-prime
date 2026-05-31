@@ -95,7 +95,7 @@ async function patch(path,body){
 function rs(url,w){
   if(!url) return url;
   if(url.indexOf('/storage/v1/object/public/')>=0)
-    return url.replace('/object/public/','/render/image/public/')+(url.indexOf('?')<0?'?':'&')+'width='+w+'&quality=70';
+    return url.replace('/object/public/','/render/image/public/')+(url.indexOf('?')<0?'?':'&')+'width='+w+'&resize=contain&quality=70';
   return 'https://images.weserv.nl/?url='+encodeURIComponent(url.replace(/^https?:\/\//,''))+'&w='+w+'&q=70&output=webp';
 }
 
