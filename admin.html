@@ -386,7 +386,7 @@ const AUTH_EMAIL='wjd7496@gmail.com';
 function emailFor(uid){const i=AUTH_EMAIL.indexOf('@');return AUTH_EMAIL.slice(0,i)+'+'+uid+AUTH_EMAIL.slice(i);}
 let SESSION=null,isMaster=false; // SESSION = {access_token, refresh_token, expires_at, user}
 
-let me=null,animals=[],pendingF=[null,null],selMorph=null,editMorph=null,editF=[null,null],editUrls=[null,null],hSelMorph=null;
+let me=null,animals=[],pendingF=[null,null],selMorph=[],editMorph=[],editF=[null,null],editUrls=[null,null],hSelMorph=[];
 
 // ── Supabase Auth 세션 관리 ──────────────────────────────
 function setSession(d){
@@ -499,13 +499,16 @@ function switchTab(sec,tab){
 function buildMorphGrid(id,type){
   document.getElementById(id).innerHTML=MORPHS.map(m=>'<div class="morph-chip" onclick="pickMorph(\''+m+'\',this,\''+type+'\')">'+m+'</div>').join('');
 }
+// 모프는 최대 3개까지 다중선택, DB에는 공백으로 합쳐 기존 morph 한 칸에 저장
+const MAXMORPH=3, MORPH_SEP=' ';
+function morphStr(arr){return arr&&arr.length?arr.join(MORPH_SEP):null;}
+function morphArr(str){return str?str.split(MORPH_SEP).filter(Boolean):[];}
 function pickMorph(name,el,type){
-  const id=type==='p'?'morphGrid':type==='h'?'hMorphGrid':'editMorphGrid';
-  document.getElementById(id).querySelectorAll('.morph-chip').forEach(c=>c.classList.remove('selected'));
-  if(type==='p'){if(selMorph===name){selMorph=null;return;}selMorph=name;}
-  else if(type==='h'){if(hSelMorph===name){hSelMorph=null;return;}hSelMorph=name;}
-  else{if(editMorph===name){editMorph=null;return;}editMorph=name;}
-  el.classList.add('selected');
+  const arr=type==='p'?selMorph:type==='h'?hSelMorph:editMorph;
+  const i=arr.indexOf(name);
+  if(i>=0){arr.splice(i,1);el.classList.remove('selected');return;}
+  if(arr.length>=MAXMORPH){alert('모프는 최대 '+MAXMORPH+'개까지 선택할 수 있어요');return;}
+  arr.push(name);el.classList.add('selected');
 }
 
 async function loadAnimals(){
@@ -589,11 +592,11 @@ async function saveAnimal(){
     if(pendingF[1])u2=await sbup(pendingF[1],me+'_'+ts+'_2.jpg');
     const fid=document.getElementById('aFather').value||null;
     const mid=document.getElementById('aMother').value||null;
-    await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:selMorph||null,image_url:u1,image_url_2:u2,owner_id:me,owner_label:BREEDERS[me],father_id:fid,mother_id:mid})});
+    await api('animals',{method:'POST',body:JSON.stringify({name,code,gender:gender||null,morph:morphStr(selMorph),image_url:u1,image_url_2:u2,owner_id:me,owner_label:BREEDERS[me],father_id:fid,mother_id:mid})});
     ok.style.display='block';
     document.getElementById('aName').value='';document.getElementById('aCode').value='';document.getElementById('aGender').value='';
     document.querySelectorAll('#morphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
-    selMorph=null;pendingF=[null,null];
+    selMorph=[];pendingF=[null,null];
     [0,1].forEach(i=>{document.getElementById('ph'+i).innerHTML='<div style="font-size:22px">📷</div><div class="upload-label">사진 '+(i+1)+'</div>';});
     setTimeout(()=>ok.style.display='none',2500);
     await loadAnimals();
@@ -618,7 +621,7 @@ async function saveHatchling(){
     await api('hatchlings',{method:'POST',body:JSON.stringify({
       code,father_id:fid,mother_id:mid,
       father_code:father?.code||null,mother_code:mother?.code||null,
-      morph:hSelMorph||null,gender:gender||null,
+      morph:morphStr(hSelMorph),gender:gender||null,
       owner_id:mother?.owner_id||me,owner_label:mother?.owner_label||BREEDERS[me],
       hatch_date:dv,clutch_no:parseInt(cl)
     })});
@@ -627,7 +630,7 @@ async function saveHatchling(){
     document.getElementById('hCodePrev').textContent='—';
     document.getElementById('hBreederPrev').textContent='—';
     document.querySelectorAll('#hMorphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
-    hSelMorph=null;
+    hSelMorph=[];
     setTimeout(()=>ok.style.display='none',2500);
   }catch(e){err.textContent='등록 실패: '+e.message;err.style.display='block';}
   finally{showOverlay(false);}
@@ -660,13 +663,13 @@ async function delHatch(id,code){if(!confirm('"'+code+'" 삭제?'))return;try{aw
 
 function openEdit(id){
   const a=animals.find(x=>x.id===id);if(!a)return;
-  editMorph=a.morph||null;editF=[null,null];editUrls=[a.image_url||null,a.image_url_2||null];
+  editMorph=morphArr(a.morph);editF=[null,null];editUrls=[a.image_url||null,a.image_url_2||null];
   document.getElementById('editId').value=id;
   document.getElementById('editName').value=a.name;
   document.getElementById('editCode').value=a.code||'';
   document.getElementById('editGender').value=a.gender||'';
   buildMorphGrid('editMorphGrid','e');
-  if(a.morph)setTimeout(()=>document.querySelectorAll('#editMorphGrid .morph-chip').forEach(c=>{if(c.textContent===a.morph)c.classList.add('selected');}),50);
+  if(editMorph.length)setTimeout(()=>document.querySelectorAll('#editMorphGrid .morph-chip').forEach(c=>{if(editMorph.includes(c.textContent))c.classList.add('selected');}),50);
   setTimeout(()=>{
     if(a.father_id)document.getElementById('editFather').value=a.father_id;
     if(a.mother_id)document.getElementById('editMother').value=a.mother_id;
@@ -695,7 +698,7 @@ async function submitEdit(){
     if(editF[1])u2=await sbup(editF[1],me+'_'+ts+'_2.jpg');
     const efid=document.getElementById('editFather').value||null;
     const emid=document.getElementById('editMother').value||null;
-    await api('animals?id=eq.'+id,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:editMorph||null,image_url:u1,image_url_2:u2,father_id:efid,mother_id:emid})});
+    await api('animals?id=eq.'+id,{method:'PATCH',body:JSON.stringify({name,code:code||null,gender:gender||null,morph:morphStr(editMorph),image_url:u1,image_url_2:u2,father_id:efid,mother_id:emid})});
     ok.style.display='block';
     setTimeout(()=>{ok.style.display='none';closeEdit();renderAnimalList();},1500);
   }catch(e){err.textContent='수정 실패: '+e.message;err.style.display='block';}

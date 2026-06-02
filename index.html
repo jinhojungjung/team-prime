@@ -194,7 +194,7 @@ function buildFilters(){
   const src=allAnimalsMeta.length?allAnimalsMeta:animals;
   const existing=new Set(src.map(a=>a.owner_label).filter(Boolean));
   const breeders=['전체',...BREEDER_ORDER.filter(b=>existing.has(b)),...[...existing].filter(b=>!BREEDER_ORDER.includes(b))];
-  const morphs=['전체',...new Set(src.map(a=>a.morph).filter(Boolean))].sort();
+  const morphs=['전체',...new Set(src.flatMap(a=>(a.morph||'').split(' ')).filter(Boolean))].sort();
   const genders=['전체',...new Set(src.map(a=>a.gender).filter(Boolean))];
   document.getElementById('breederFilters').innerHTML=breeders.map(b=>'<button class="filter-chip'+(b===activeBreeder?' active':'')+'" onclick="setBreeder(\''+b+'\')">'+(b==='마이크레소프트'?'👑 '+b:b)+'</button>').join('');
   document.getElementById('morphFilters').innerHTML=morphs.map(m=>'<button class="filter-chip'+(m==='전체'&&!activeMorphs.length?' active':activeMorphs.includes(m)?' active':'')+'" onclick="setMorph(\''+m+'\')">'+m+'</button>').join('');
@@ -204,7 +204,7 @@ function buildHFilters(){
   const src=allHatchlingsMeta.length?allHatchlingsMeta:hatchlings;
   const existing=new Set(src.map(h=>h.owner_label).filter(Boolean));
   const breeders=['전체',...BREEDER_ORDER.filter(b=>existing.has(b)),...[...existing].filter(b=>!BREEDER_ORDER.includes(b))];
-  const morphs=['전체',...new Set(src.map(h=>h.morph).filter(Boolean))].sort();
+  const morphs=['전체',...new Set(src.flatMap(h=>(h.morph||'').split(' ')).filter(Boolean))].sort();
   const genders=['전체',...new Set(src.map(h=>h.gender).filter(Boolean))];
   document.getElementById('hBreederFilters').innerHTML=breeders.map(b=>'<button class="filter-chip'+(b===hActiveBreeder?' active':'')+'" onclick="setHBreeder(\''+b+'\')">'+(b==='마이크레소프트'?'👑 '+b:b)+'</button>').join('');
   document.getElementById('hMorphFilters').innerHTML=morphs.map(m=>'<button class="filter-chip'+(m==='전체'&&!hActiveMorphs.length?' active':hActiveMorphs.includes(m)?' active':'')+'" onclick="setHMorph(\''+m+'\')">'+m+'</button>').join('');
@@ -234,10 +234,10 @@ function setHMorph(m){
 function setHGender(g){hActiveGender=g;buildHFilters();renderHMain();}
 
 function applyFilters(list){
-  return list.filter(a=>(activeBreeder==='전체'||a.owner_label===activeBreeder)&&(!activeMorphs.length||activeMorphs.includes(a.morph))&&(activeGender==='전체'||a.gender===activeGender));
+  return list.filter(a=>(activeBreeder==='전체'||a.owner_label===activeBreeder)&&(!activeMorphs.length||(a.morph&&activeMorphs.some(m=>a.morph.split(' ').includes(m))))&&(activeGender==='전체'||a.gender===activeGender));
 }
 function applyHFilters(list){
-  return list.filter(h=>(hActiveBreeder==='전체'||h.owner_label===hActiveBreeder)&&(!hActiveMorphs.length||hActiveMorphs.includes(h.morph))&&(hActiveGender==='전체'||h.gender===hActiveGender));
+  return list.filter(h=>(hActiveBreeder==='전체'||h.owner_label===hActiveBreeder)&&(!hActiveMorphs.length||(h.morph&&hActiveMorphs.some(m=>h.morph.split(' ').includes(m))))&&(hActiveGender==='전체'||h.gender===hActiveGender));
 }
 
 // ── 부모 개체
@@ -263,7 +263,7 @@ function renderMain(){
 
 function parentCard(a){
   const thumb=a.image_url?'<img data-src="'+rs(a.image_url,200)+'" alt="'+a.name+'" loading="lazy" decoding="async">':'<span style="font-size:28px">🦎</span>';
-  return '<div class="animal-card" onclick="openParent(\''+a.id+'\')"><div class="animal-thumb">'+thumb+'</div><div class="animal-info"><h3>'+a.name+'</h3>'+(a.code?'<div class="code-text">'+a.code+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+a.owner_label+'</span>'+(a.morph?'<span class="badge">'+a.morph+'</span>':'')+genderBadge(a.gender)+'</div></div>'+(a.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
+  return '<div class="animal-card" onclick="openParent(\''+a.id+'\')"><div class="animal-thumb">'+thumb+'</div><div class="animal-info"><h3>'+a.name+'</h3>'+(a.code?'<div class="code-text">'+a.code+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+a.owner_label+'</span>'+(a.morph?a.morph.split(' ').map(m=>'<span class="badge">'+m+'</span>').join(''):'')+genderBadge(a.gender)+'</div></div>'+(a.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
 }
 
 function openParent(id){
