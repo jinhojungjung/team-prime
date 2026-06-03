@@ -51,7 +51,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .animal-info{min-width:0;flex:1}
 .animal-info h3{font-size:14px;font-weight:700;color:#000}
 .code-text{font-size:10px;color:#aaa;font-family:monospace;margin-top:1px}
-.badge-row{display:flex;gap:4px;margin-top:5px;flex-wrap:nowrap;overflow:hidden;align-items:center}
+.badge-row{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;align-items:center}
 .badge{font-size:10px;padding:2px 7px;border:1px solid #000;color:#000;font-weight:600;white-space:nowrap;flex-shrink:0;line-height:1.7;word-break:keep-all;display:inline-flex;align-items:center;gap:2px}
 .badge.owner{background:#000;color:#fff}
 .badge.gender-m{background:#e8f0fe;border-color:#4a7cf7;color:#2a5cd4}

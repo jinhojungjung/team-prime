@@ -212,7 +212,7 @@ function buildFilters(){
   const genders=['전체',...new Set(src.map(a=>a.gender).filter(Boolean))];
   document.getElementById('breederFilters').innerHTML=breeders.map(b=>'<button class="filter-chip'+(b===activeBreeder?' active':'')+'" onclick="setBreeder(\''+b+'\')">'+(b==='마이크레소프트'?'👑 '+b:b)+'</button>').join('');
   document.getElementById('morphFilters').innerHTML=morphs.map(m=>'<button class="filter-chip'+(m==='전체'&&!activeMorphs.length?' active':activeMorphs.includes(m)?' active':'')+'" onclick="setMorph(\''+m+'\')">'+m+'</button>').join('');
-  document.getElementById('genderFilters').innerHTML=genders.map(g=>'<button class="filter-chip'+(g===activeGender?' active':'')+'" onclick="setGender(\''+g+'\')">'+(g==='수컷'?'♂ 수컷':g==='암컷'?'♀ 암컷':g)+'</button>').join('');
+  document.getElementById('genderFilters').innerHTML=genders.map(g=>'<button class="filter-chip'+(g===activeGender?' active':'')+'" onclick="setGender(\''+g+'\')">'+(g==='수컷'?'♂&#xFE0E; 수컷':g==='암컷'?'♀&#xFE0E; 암컷':g)+'</button>').join('');
 }
 function buildHFilters(){
   const src=allHatchlingsMeta.length?allHatchlingsMeta:hatchlings;
@@ -222,7 +222,7 @@ function buildHFilters(){
   const genders=['전체',...new Set(src.map(h=>h.gender).filter(Boolean))];
   document.getElementById('hBreederFilters').innerHTML=breeders.map(b=>'<button class="filter-chip'+(b===hActiveBreeder?' active':'')+'" onclick="setHBreeder(\''+b+'\')">'+(b==='마이크레소프트'?'👑 '+b:b)+'</button>').join('');
   document.getElementById('hMorphFilters').innerHTML=morphs.map(m=>'<button class="filter-chip'+(m==='전체'&&!hActiveMorphs.length?' active':hActiveMorphs.includes(m)?' active':'')+'" onclick="setHMorph(\''+m+'\')">'+m+'</button>').join('');
-  document.getElementById('hGenderFilters').innerHTML=genders.map(g=>'<button class="filter-chip'+(g===hActiveGender?' active':'')+'" onclick="setHGender(\''+g+'\')">'+(g==='수컷'?'♂ 수컷':g==='암컷'?'♀ 암컷':g)+'</button>').join('');
+  document.getElementById('hGenderFilters').innerHTML=genders.map(g=>'<button class="filter-chip'+(g===hActiveGender?' active':'')+'" onclick="setHGender(\''+g+'\')">'+(g==='수컷'?'♂&#xFE0E; 수컷':g==='암컷'?'♀&#xFE0E; 암컷':g)+'</button>').join('');
 }
 function setBreeder(b){activeBreeder=b;buildFilters();renderMain();}
 function setMorph(m){
@@ -262,8 +262,8 @@ function sortByPinned(list){
 }
 function genderBadge(g){
   if(!g) return '';
-  if(g==='수컷') return '<span class="badge gender-m">♂ 수컷</span>';
-  if(g==='암컷') return '<span class="badge gender-f">♀ 암컷</span>';
+  if(g==='수컷') return '<span class="badge gender-m">♂&#xFE0E; 수컷</span>';
+  if(g==='암컷') return '<span class="badge gender-f">♀&#xFE0E; 암컷</span>';
   return '<span class="badge">'+g+'</span>';
 }
 
