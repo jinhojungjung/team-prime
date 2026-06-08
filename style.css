@@ -18,7 +18,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:#000}
 body{font-family:var(--ui);background:var(--bg);color:var(--ink);display:flex;justify-content:center;
-  -webkit-font-smoothing:antialiased;letter-spacing:.005em}
+  -webkit-font-smoothing:antialiased;letter-spacing:.005em;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 /* ── LAYOUT ── */
 .app{width:100%;max-width:430px;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;
@@ -39,7 +39,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--ink);display:flex;ju
 
 /* ── HEADER (홈 워드마크) ── */
 .home-head{padding:20px 18px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;
-  background:rgba(14,15,17,.86);backdrop-filter:blur(16px)}
+  background:rgba(14,15,17,.86);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--mute)}
 .wordmark{font-family:var(--exp);font-weight:800;font-size:28px;letter-spacing:-.01em;line-height:.96;
   margin:10px 0 8px;text-transform:uppercase;color:var(--ink)}
@@ -48,7 +48,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--ink);display:flex;ju
 
 /* ── HEADER (서브페이지: post/genealogy/admin) ── */
 .header{padding:16px 16px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;
-  justify-content:space-between;gap:12px;position:sticky;top:0;background:rgba(14,15,17,.86);backdrop-filter:blur(16px);z-index:20}
+  justify-content:space-between;gap:12px;position:sticky;top:0;background:rgba(14,15,17,.86);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);z-index:20}
 .header-left{display:flex;align-items:center;gap:10px}
 .header-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink);padding:0;line-height:1}
 .header-logo{font-family:var(--exp);font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--ink);text-transform:uppercase}
@@ -59,7 +59,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--ink);display:flex;ju
 
 /* ── BOTTOM NAV ── */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;display:flex;z-index:50;
-  border-top:1px solid var(--line2);background:rgba(14,15,17,.94);backdrop-filter:blur(16px)}
+  border-top:1px solid var(--line2);background:rgba(14,15,17,.94);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 .bnav{flex:1;padding:10px 4px 12px;text-align:center;cursor:pointer;background:none;border:none;font-family:inherit;
   color:var(--mute);position:relative;transition:color .18s}
 .bnav.on{color:var(--ink)}
@@ -113,9 +113,10 @@ body{font-family:var(--ui);background:var(--bg);color:var(--ink);display:flex;ju
 .card{position:relative;background:var(--surface);border:1px solid var(--line);overflow:hidden;transition:.22s;cursor:pointer}
 .card:hover{border-color:var(--line2);background:var(--surface2)}
 .card:active{transform:scale(.99)}
-.photo{position:relative;aspect-ratio:1/1;overflow:hidden;background:linear-gradient(155deg,#23262b,#0f1012);display:flex;align-items:center;justify-content:center}
-.photo>.emoji{font-size:48px;filter:grayscale(1) opacity(.8)}
-.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.photo{position:relative;overflow:hidden;background:linear-gradient(155deg,#23262b,#0f1012)}
+.photo::before{content:"";display:block;padding-top:100%}
+.photo>.emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;filter:grayscale(1) opacity(.8)}
+.photo img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center}
 .photo .frame{position:absolute;inset:7px;border:1px solid rgba(255,255,255,.12);z-index:3;pointer-events:none}
 .no{position:absolute;top:0;left:0;z-index:4;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink);
   background:rgba(14,15,17,.8);padding:5px 9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
