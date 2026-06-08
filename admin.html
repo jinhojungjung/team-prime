@@ -788,14 +788,29 @@ async function handleEditorImg(e){
   finally{showOverlay(false);e.target.value='';}
 }
 
+// 본문에 박힌 base64 이미지(<img src="data:...">)를 Storage에 업로드하고 URL로 치환한다.
+// 붙여넣기 등으로 들어온 거대한 base64를 그대로 저장하면 본문이 수 MB가 되어 INSERT가 타임아웃(57014)된다.
+async function inlineImagesToStorage(html){
+  const div=document.createElement('div'); div.innerHTML=html;
+  const imgs=Array.prototype.slice.call(div.querySelectorAll('img')).filter(im=>/^data:image\//i.test(im.getAttribute('src')||''));
+  for(const im of imgs){
+    const blob=await (await fetch(im.getAttribute('src'))).blob();
+    const url=await sbup(blob,'post_'+me+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'.jpg');
+    im.setAttribute('src',url);
+  }
+  return div.innerHTML;
+}
+
 async function savePost(){
   const title=document.getElementById('pTitle').value.trim();
-  const html=document.getElementById('pEditor').innerHTML.trim();
+  let html=document.getElementById('pEditor').innerHTML.trim();
   const cat=document.getElementById('pCategory').value;
   const ok=document.getElementById('psaveOk'),err=document.getElementById('psaveErr');
   ok.style.display='none';err.style.display='none';
   if(!title||!html||html==='<br>'){err.textContent='제목과 내용을 입력해주세요';err.style.display='block';return;}
+  showOverlay(true);
   try{
+    html=await inlineImagesToStorage(html);
     await api('posts',{method:'POST',body:JSON.stringify({title,content:html,category:cat||null,author_id:me,author_label:BREEDERS[me]})});
     ok.style.display='block';
     document.getElementById('pTitle').value='';
@@ -803,6 +818,7 @@ async function savePost(){
     document.getElementById('pCategory').value='';
     setTimeout(()=>ok.style.display='none',2500);
   }catch(e){err.textContent='등록 실패: '+e.message;err.style.display='block';}
+  finally{showOverlay(false);}
 }
 
 async function renderPostList(){
@@ -841,16 +857,19 @@ function plink(){const url=prompt('링크 URL:');if(url)document.execCommand('cr
 async function submitEditPost(){
   const id=document.getElementById('editPostId').value;
   const title=document.getElementById('editPostTitle').value.trim();
-  const html=document.getElementById('editPostEditor').innerHTML.trim();
+  let html=document.getElementById('editPostEditor').innerHTML.trim();
   const cat=document.getElementById('editPostCat').value;
   const ok=document.getElementById('editPostOk'),err=document.getElementById('editPostErr');
   ok.style.display='none';err.style.display='none';
   if(!title||!html){err.textContent='제목과 내용을 입력해주세요';err.style.display='block';return;}
+  showOverlay(true);
   try{
+    html=await inlineImagesToStorage(html);
     await api('posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({title,content:html,category:cat||null})});
     ok.style.display='block';
     setTimeout(()=>{ok.style.display='none';closeEditPost();renderPostList();},1500);
   }catch(e){err.textContent='수정 실패: '+e.message;err.style.display='block';}
+  finally{showOverlay(false);}
 }
 
 // 페이지 로드: 비밀번호 재설정 링크 처리 + 저장된 세션 자동 복구
