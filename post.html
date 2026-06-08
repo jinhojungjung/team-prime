@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0e0f11">
 <title>TEAM.PRIME</title>
 <meta name="description" content="크레스티드 게코 브리딩 카탈로그">
 <!-- 링크 공유 미리보기 (Open Graph / Twitter) -->
@@ -19,8 +19,12 @@
 <meta name="twitter:title" content="TEAM.PRIME">
 <meta name="twitter:description" content="크레스티드 게코 브리딩 카탈로그">
 <meta name="twitter:image" content="https://teamprime.site/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="/style.css">
-<style>.post-content img{width:100%!important;max-width:100%!important;height:auto!important;display:block;margin:14px 0;border-radius:4px}</style>
+<style>.post-content img{width:100%!important;max-width:100%!important;height:auto!important;display:block;margin:18px 0;border:1px solid var(--line)}</style>
 </head>
 <body>
 <div class="app">
@@ -54,9 +58,9 @@ function render(p){
   document.title=`${p.title} — TEAM.PRIME`;
   document.getElementById('postWrap').innerHTML=`
     <div class="post-wrap">
-      ${p.category?`<div class="post-cat">${p.category}</div>`:''}
-      <div class="post-title">${p.title}</div>
-      <div class="post-meta">
+      ${p.category?`<div class="post-page-cat">${p.category}</div>`:''}
+      <div class="post-page-title">${p.title}</div>
+      <div class="post-page-meta">
         <span>${p.author_label||''}</span>
         <span>·</span>
         <span>${date}</span>

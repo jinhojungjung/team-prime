@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0e0f11">
 <title>TEAM.PRIME</title>
 <meta name="description" content="크레스티드 게코 브리딩 카탈로그">
 <!-- 링크 공유 미리보기 (Open Graph / Twitter) -->
@@ -19,23 +19,26 @@
 <meta name="twitter:title" content="TEAM.PRIME">
 <meta name="twitter:description" content="크레스티드 게코 브리딩 카탈로그">
 <meta name="twitter:image" content="https://teamprime.site/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <div class="app">
-  <div class="header">
-    <div class="header-left">
-      <span style="font-size:27px;line-height:1">🦎</span>
-      <div><div class="logo">TEAM.PRIME</div><div class="sub">개체 검색</div></div>
-    </div>
-    <div class="visitor">방문자<br><b id="visitorNum">-</b></div>
+  <div class="strip"><span><span class="dot">●</span> TEAM.PRIME CATALOG</span><span>VISITORS <b id="visitorNum">-</b></span></div>
+  <div class="home-head">
+    <div class="eyebrow">Crested Gecko</div>
+    <div class="wordmark">Team<b>.</b>Prime</div>
+    <div class="tagline">only prime &amp; morph studio</div>
   </div>
 
   <div class="search-wrap">
     <div class="search-box">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="이름, 모프, 코드, 해칭코드 검색" oninput="doGlobalSearch()" autocomplete="off" spellcheck="false">
-      <button id="searchClear" onclick="clearSearch()" style="display:none;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;padding:0 2px">✕</button>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="이름 · 모프 · 코드 검색" oninput="doGlobalSearch()" autocomplete="off" spellcheck="false">
+      <button id="searchClear" onclick="clearSearch()" style="display:none;background:none;border:none;cursor:pointer;color:var(--mute);font-size:16px;padding:0 2px">✕</button>
     </div>
   </div>
 
@@ -43,22 +46,31 @@
     <div class="results" id="searchResults"></div>
   </div>
 
-  <div id="section-parents" style="display:block">
+  <div id="section-home" style="display:block">
+    <div class="stats">
+      <div class="stat"><div class="v" id="statParents">-</div><div class="k">Parents</div></div>
+      <div class="stat"><div class="v" id="statHatch">-</div><div class="k">Hatchlings</div></div>
+      <div class="stat"><div class="v" id="statGuide">-</div><div class="k">Guide</div></div>
+    </div>
+    <div id="homeContent"></div>
+  </div>
+
+  <div id="section-parents" style="display:none">
     <div class="filter-section">
       <div class="filter-label">브리더</div><div class="filter-row" id="breederFilters"></div>
-      <div class="filter-label" style="margin-top:6px">모프</div><div class="filter-row" id="morphFilters"></div>
-      <div class="filter-label" style="margin-top:6px">성별</div><div class="filter-row" id="genderFilters"></div>
+      <div class="filter-label" style="margin-top:8px">모프</div><div class="filter-row" id="morphFilters"></div>
+      <div class="filter-label" style="margin-top:8px">성별</div><div class="filter-row" id="genderFilters"></div>
     </div>
-    <div class="results" id="results"><div class="empty"><span class="empty-icon">🦎</span>불러오는 중...</div></div>
+    <div class="results" id="results"><div class="loading">불러오는 중...</div></div>
   </div>
 
   <div id="section-hatchlings" style="display:none">
     <div class="filter-section">
       <div class="filter-label">브리더</div><div class="filter-row" id="hBreederFilters"></div>
-      <div class="filter-label" style="margin-top:6px">모프</div><div class="filter-row" id="hMorphFilters"></div>
-      <div class="filter-label" style="margin-top:6px">성별</div><div class="filter-row" id="hGenderFilters"></div>
+      <div class="filter-label" style="margin-top:8px">모프</div><div class="filter-row" id="hMorphFilters"></div>
+      <div class="filter-label" style="margin-top:8px">성별</div><div class="filter-row" id="hGenderFilters"></div>
     </div>
-    <div class="results" id="hResults"><div class="empty"><span class="empty-icon">🥚</span>불러오는 중...</div></div>
+    <div class="results" id="hResults"><div class="loading">불러오는 중...</div></div>
   </div>
 
   <div id="section-guide" style="display:none">
@@ -67,14 +79,21 @@
 </div>
 
 <nav class="bottom-nav">
-  <button class="bnav on" id="bnav-parents" onclick="switchTab('parents')">
-    <span class="bnav-icon">🦎</span><span class="bnav-label">부모 개체</span>
+  <button class="bnav on" id="bnav-home" onclick="switchTab('home')">
+    <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
+    <span class="bnav-label">홈</span>
+  </button>
+  <button class="bnav" id="bnav-parents" onclick="switchTab('parents')">
+    <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="10.5" r="1.6"/><circle cx="10" cy="6.8" r="1.6"/><circle cx="14" cy="6.8" r="1.6"/><circle cx="17.5" cy="10.5" r="1.6"/><path d="M12 11.5c2.6 0 4.6 1.9 4.6 4 0 1.7-1.4 2.6-2.9 2.1a5.6 5.6 0 0 0-3.4 0c-1.5.5-2.9-.4-2.9-2.1 0-2.1 2-4 4.6-4z"/></svg></span>
+    <span class="bnav-label">개체</span>
   </button>
   <button class="bnav" id="bnav-hatchlings" onclick="switchTab('hatchlings')">
-    <span class="bnav-icon">🥚</span><span class="bnav-label">해칭 개체</span>
+    <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3.3 0 6 4.6 6 9.2 0 3.9-2.7 6.8-6 6.8s-6-2.9-6-6.8c0-4.6 2.7-9.2 6-9.2z"/></svg></span>
+    <span class="bnav-label">해칭</span>
   </button>
   <button class="bnav" id="bnav-guide" onclick="switchTab('guide')">
-    <span class="bnav-icon">📖</span><span class="bnav-label">가이드</span>
+    <span class="bnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="1.6"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg></span>
+    <span class="bnav-label">가이드</span>
   </button>
 </nav>
 
@@ -92,7 +111,7 @@ const BREEDER_ORDER=['마이크레소프트','슈프림크레','모프스튜디�
 let animals=[],hatchlings=[],posts=[],allAnimalsMeta=[],allHatchlingsMeta=[];
 let activeBreeder='전체',activeMorphs=[],activeGender='전체';
 let hActiveBreeder='전체',hActiveMorphs=[],hActiveGender='전체';
-let currentTab='parents',slideIdx=0,searchTimer=null;
+let currentTab='home',slideIdx=0,searchTimer=null;
 let animalPage=1,hatchPage=1,animalDone=false,hatchDone=false,loadingMore=false;
 
 async function get(path){
@@ -123,12 +142,33 @@ async function init(){
   allAnimalsMeta=a; allHatchlingsMeta=h;
   animalDone=true; hatchDone=true;
   buildFilters(); buildHFilters();
-  renderMain(); renderHMain();
+  renderMain(); renderHMain(); renderHome();
   loadPosts(); handleVisitor();
 }
 
 async function loadPosts(){
-  try{ posts=await get('posts?select=id,title,category,author_label,created_at&order=created_at.desc'); renderPosts(); }catch(e){}
+  try{ posts=await get('posts?select=id,title,category,author_label,created_at&order=created_at.desc'); renderPosts(); renderHome(); }catch(e){}
+}
+
+// ── 홈 (미리보기 대시보드)
+function renderHome(){
+  document.getElementById('statParents').textContent=animals.length;
+  document.getElementById('statHatch').textContent=hatchlings.length;
+  document.getElementById('statGuide').textContent=posts.length;
+  const pPrev=sortByPinned(animals).slice(0,2);
+  const hPrev=hatchlings.slice(0,2);
+  let html='';
+  html+='<div class="slabel"><h2>Parents</h2><span class="n">['+animals.length+']</span><span class="ln"></span><button class="more" onclick="switchTab(\'parents\')">전체 →</button></div>';
+  html+='<div class="card-grid" style="padding:0 18px">'+pPrev.map(parentCard).join('')+'</div>';
+  html+='<div class="slabel"><h2>Hatchlings</h2><span class="n">['+hatchlings.length+']</span><span class="ln"></span><button class="more" onclick="switchTab(\'hatchlings\')">전체 →</button></div>';
+  html+='<div class="card-grid" style="padding:0 18px">'+hPrev.map(hatchCard).join('')+'</div>';
+  if(posts.length){
+    const p=posts[0]; const date=new Date(p.created_at).toLocaleDateString('ko-KR');
+    html+='<div class="slabel"><h2>Guide</h2><span class="n">Journal</span><span class="ln"></span><button class="more" onclick="switchTab(\'guide\')">전체 →</button></div>';
+    html+='<div style="padding:0 18px 8px"><div class="post-card" onclick="location.href=\'/post.html?id='+p.id+'\'"><div class="post-meta">'+(p.category?'<span class="post-cat">'+p.category+'</span>':'')+'<span class="post-author">'+(p.author_label||'')+'</span><span class="post-date">'+date+'</span></div><div class="post-title">'+p.title+'</div></div></div>';
+  }
+  const el=document.getElementById('homeContent');
+  el.innerHTML=html; lazyLoad(el);
 }
 
 async function loadMoreAnimals(){
@@ -165,10 +205,11 @@ async function handleVisitor(){
 // ── 탭
 function switchTab(tab){
   currentTab=tab; clearSearch();
-  ['parents','hatchlings','guide'].forEach(t=>{
+  ['home','parents','hatchlings','guide'].forEach(t=>{
     document.getElementById('section-'+t).style.display=t===tab?'block':'none';
     document.getElementById('bnav-'+t).classList.toggle('on',t===tab);
   });
+  if(tab==='home') renderHome();
   window.scrollTo(0,0);
 }
 
@@ -180,7 +221,7 @@ function _search(){
   const cb=document.getElementById('searchClear');
   if(!q){ clearSearch(); return; }
   cb.style.display='block';
-  ['parents','hatchlings','guide'].forEach(t=>document.getElementById('section-'+t).style.display='none');
+  ['home','parents','hatchlings','guide'].forEach(t=>document.getElementById('section-'+t).style.display='none');
   document.getElementById('section-search').style.display='block';
   const pFound=animals.filter(a=>a.name.toLowerCase().includes(q)||(a.morph&&a.morph.toLowerCase().includes(q))||(a.code&&a.code.toLowerCase().includes(q)));
   const hFound=hatchlings.filter(h=>{
@@ -191,8 +232,8 @@ function _search(){
   const el=document.getElementById('searchResults');
   if(!pFound.length&&!hFound.length){ el.innerHTML='<div class="empty"><span class="empty-icon">😶</span>검색 결과가 없습니다</div>'; return; }
   let html='';
-  if(pFound.length){ html+='<div class="result-label" style="padding-top:4px">🦎 부모 개체 ('+pFound.length+')</div>'+sortByPinned(pFound).map(parentCard).join(''); }
-  if(hFound.length){ html+='<div class="result-label" style="margin-top:'+(pFound.length?'12px':'4px')+'">🥚 해칭 개체 ('+hFound.length+')</div>'+hFound.map(hatchCard).join(''); }
+  if(pFound.length){ html+='<div class="result-label">부모 개체 '+pFound.length+'</div><div class="card-grid">'+sortByPinned(pFound).map(parentCard).join('')+'</div>'; }
+  if(hFound.length){ html+='<div class="result-label"'+(pFound.length?' style="margin-top:20px"':'')+'>해칭 개체 '+hFound.length+'</div><div class="card-grid">'+hFound.map(hatchCard).join('')+'</div>'; }
   el.innerHTML=html; lazyLoad(el);
 }
 
@@ -200,7 +241,7 @@ function clearSearch(){
   document.getElementById('searchInput').value='';
   document.getElementById('searchClear').style.display='none';
   document.getElementById('section-search').style.display='none';
-  ['parents','hatchlings','guide'].forEach(t=>document.getElementById('section-'+t).style.display=t===currentTab?'block':'none');
+  ['home','parents','hatchlings','guide'].forEach(t=>document.getElementById('section-'+t).style.display=t===currentTab?'block':'none');
 }
 
 // ── 필터
@@ -271,13 +312,18 @@ function renderMain(){
   const el=document.getElementById('results');
   const list=sortByPinned(applyFilters(animals));
   if(!list.length){ el.innerHTML='<div class="empty"><span class="empty-icon">🦎</span>등록된 개체가 없습니다</div>'; return; }
-  el.innerHTML='<div class="result-label">'+list.length+'마리</div>'+list.map(parentCard).join('');
+  el.innerHTML='<div class="result-label">'+list.length+' 마리</div><div class="card-grid">'+list.map(parentCard).join('')+'</div>';
   lazyLoad(el);
 }
 
 function parentCard(a){
-  const thumb=a.image_url?'<img data-src="'+rs(a.image_url,200)+'" alt="'+a.name+'" loading="lazy" decoding="async">':'<span style="font-size:28px">🦎</span>';
-  return '<div class="animal-card" onclick="openParent(\''+a.id+'\')"><div class="animal-thumb">'+thumb+'</div><div class="animal-info"><h3>'+a.name+'</h3>'+(a.code?'<div class="code-text">'+a.code+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+a.owner_label+'</span>'+(a.morph?a.morph.split(' ').map(m=>'<span class="badge">'+m+'</span>').join(''):'')+genderBadge(a.gender)+'</div></div>'+(a.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
+  const img=a.image_url?'<img data-src="'+rs(a.image_url,400)+'" alt="'+a.name+'" loading="lazy" decoding="async">':'<span class="emoji">🦎</span>';
+  const morphs=a.morph?a.morph.split(' ').filter(Boolean).map(m=>'<span class="mbadge">'+m+'</span>').join(''):'';
+  return '<div class="card" onclick="openParent(\''+a.id+'\')">'+
+    '<div class="photo">'+img+'<div class="frame"></div>'+(a.code?'<div class="no">'+a.code+'</div>':'')+(a.owner_label===MASTER?'<div class="crown">MASTER</div>':'')+'</div>'+
+    '<div class="cbody"><div class="cname">'+a.name+'</div>'+
+    (morphs?'<div class="morphs">'+morphs+'</div>':'')+
+    '<div class="crow"><span class="badge owner">'+a.owner_label+'</span>'+genderBadge(a.gender)+'</div></div></div>';
 }
 
 function openParent(id){
@@ -311,14 +357,18 @@ function renderHMain(){
   const el=document.getElementById('hResults');
   const list=applyHFilters(hatchlings);
   if(!list.length){ el.innerHTML='<div class="empty"><span class="empty-icon">🥚</span>등록된 해칭 개체가 없습니다</div>'; return; }
-  el.innerHTML='<div class="result-label">'+list.length+'마리</div>'+list.map(hatchCard).join('');
+  el.innerHTML='<div class="result-label">'+list.length+' 마리</div><div class="card-grid">'+list.map(hatchCard).join('')+'</div>';
 }
 
 function hatchCard(h){
   const dad=animals.find(a=>a.id===h.father_id);
   const mom=animals.find(a=>a.id===h.mother_id);
   const parents=[dad&&dad.name,mom&&mom.name].filter(Boolean).join(' × ');
-  return '<div class="animal-card" onclick="openHatch(\''+h.id+'\')"><div class="animal-thumb"><span style="font-size:28px">🥚</span></div><div class="animal-info"><div class="code-text" style="font-size:11px;font-weight:700;color:#000">'+h.code+'</div><h3 style="margin-top:2px;font-size:13px">'+(h.morph||'모프 미구분')+'</h3>'+(parents?'<div style="font-size:11px;color:#aaa;margin-top:1px">'+parents+'</div>':'')+'<div class="badge-row"><span class="badge owner">'+h.owner_label+'</span>'+genderBadge(h.gender)+'</div></div>'+(h.owner_label===MASTER?'<span class="mycre-pip">👑</span>':'')+'</div>';
+  return '<div class="card" onclick="openHatch(\''+h.id+'\')">'+
+    '<div class="photo"><span class="emoji">🥚</span><div class="frame"></div>'+(h.code?'<div class="no">'+h.code+'</div>':'')+(h.owner_label===MASTER?'<div class="crown">MASTER</div>':'')+'</div>'+
+    '<div class="cbody"><div class="cmorph">'+(h.morph||'모프 미구분')+'</div>'+
+    (parents?'<div class="parents">'+parents+'</div>':'')+
+    '<div class="crow"><span class="badge owner">'+h.owner_label+'</span>'+genderBadge(h.gender)+'</div></div></div>';
 }
 
 function openHatch(id){
@@ -333,9 +383,9 @@ function openHatch(id){
       (mom?'<div class="parent-link" onclick="closeDetail();setTimeout(function(){switchTab(\'parents\');openParent(\''+mom.id+'\')},200)"><span><span style="color:#aaa;font-size:11px">모 · </span><span class="parent-name">'+mom.name+'</span></span><span class="parent-arrow">▶</span></div>':'');
   }
   document.getElementById('detailContent').innerHTML=
-    '<div style="height:120px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:60px">🥚</div>'+
+    '<div style="height:130px;background:linear-gradient(155deg,#26292e,#0f1012);display:flex;align-items:center;justify-content:center;font-size:60px;filter:grayscale(1) opacity(.85)">🥚</div>'+
     '<div class="modal-inner">'+
-    '<div class="detail-code" style="font-size:13px;font-weight:700;color:#000;font-family:monospace">'+h.code+'</div>'+
+    '<div class="detail-code" style="font-size:13px;font-weight:700;color:var(--ink)">'+h.code+'</div>'+
     '<div class="detail-name" style="font-size:18px;margin-top:4px">'+(h.morph||'모프 미구분')+'</div>'+
     '<div style="margin-top:10px">'+
     (h.gender?'<div class="detail-row"><span>성별</span><span>'+h.gender+'</span></div>':'')+
@@ -363,7 +413,7 @@ function renderPosts(){
 
 // ── 공통
 function heroHtml(photos){
-  if(!photos.length) return '<div style="height:160px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:60px">🦎</div>';
+  if(!photos.length) return '<div style="height:170px;background:linear-gradient(155deg,#2b2e33,#121316);display:flex;align-items:center;justify-content:center;font-size:60px;filter:grayscale(1) opacity(.85)">🦎</div>';
   if(photos.length===1) return '<div class="photo-slider"><img src="'+rs(photos[0],800)+'" alt="사진" style="opacity:1"></div>';
   return '<div class="photo-slider" id="slider"><img src="'+rs(photos[0],800)+'" id="slide0" alt="사진1" style="opacity:1"><img src="'+rs(photos[1],800)+'" id="slide1" alt="사진2" class="hidden"><button class="photo-nav prev" onclick="slide(-1)">&#8249;</button><button class="photo-nav next" onclick="slide(1)">&#8250;</button><div class="photo-dots"><div class="photo-dot active" id="dot0" onclick="goSlide(0)"></div><div class="photo-dot" id="dot1" onclick="goSlide(1)"></div></div></div>';
 }

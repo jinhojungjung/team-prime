@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0e0f11">
 <title>가계도 — TEAM.PRIME</title>
 <meta name="description" content="크레스티드 게코 브리딩 카탈로그 — 가계도">
 <!-- 링크 공유 미리보기 (Open Graph / Twitter) -->
@@ -19,6 +19,10 @@
 <meta name="twitter:title" content="가계도 — TEAM.PRIME">
 <meta name="twitter:description" content="크레스티드 게코 브리딩 카탈로그 — 가계도">
 <meta name="twitter:image" content="https://teamprime.site/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -30,19 +34,19 @@
       <div class="sub">TEAM.PRIME</div>
     </div>
   </div>
-  <div style="display:flex;gap:14px;padding:10px 16px;border-bottom:1px solid #eee;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><div style="width:10px;height:10px;border-radius:50%;background:#4a7cf7;flex-shrink:0"></div>수컷</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><div style="width:10px;height:10px;border-radius:50%;background:#e06faa;flex-shrink:0"></div>암컷</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><div style="width:10px;height:10px;border-radius:50%;background:#888;flex-shrink:0"></div>해칭</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><div style="width:10px;height:10px;border-radius:2px;background:#f5a623;flex-shrink:0"></div>기준</div>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#8fbceb"></div>수컷</div>
+    <div class="leg"><div class="leg-dot" style="background:#e89bb0"></div>암컷</div>
+    <div class="leg"><div class="leg-dot" style="background:#7d848c"></div>해칭</div>
+    <div class="leg"><div class="leg-dot" style="background:#8ee9c4;border-radius:2px"></div>기준</div>
   </div>
   <div class="canvas-wrap" id="canvasWrap">
     <div class="canvas-inner" id="canvasInner">
       <div class="loading">가계도 불러오는 중...</div>
     </div>
   </div>
-  <div id="infoPanel" style="border-top:1px solid #000;padding:14px 16px;background:#fff;min-height:72px">
-    <div style="color:#bbb;font-size:13px">노드를 탭해서 정보를 확인하세요</div>
+  <div id="infoPanel" class="info-panel">
+    <div style="color:var(--mute);font-size:13px">노드를 탭해서 정보를 확인하세요</div>
   </div>
 </div>
 
@@ -196,7 +200,7 @@ function drawParentTree(focus){
       const div=document.createElementNS('http://www.w3.org/2000/svg','line');
       div.setAttribute('x1',PAD); div.setAttribute('y1',divY);
       div.setAttribute('x2',svgW-PAD); div.setAttribute('y2',divY);
-      div.setAttribute('stroke','#eee'); div.setAttribute('stroke-width','1');
+      div.setAttribute('stroke','rgba(255,255,255,.08)'); div.setAttribute('stroke-width','1');
       div.setAttribute('stroke-dasharray','4,4');
       svg.appendChild(div);
     }
@@ -354,11 +358,11 @@ function mkSVG(w,h){
 
 function addNode(svg,x,y,data,type,isFocus){
   let fill,stroke,sw,tc;
-  if(isFocus){fill='#fff7e6';stroke='#f5a623';sw=2.5;tc='#a06000';}
-  else if(type==='hatch'){fill='#f5f5f5';stroke='#aaa';sw=1;tc='#444';}
-  else if(data.gender==='수컷'){fill='#e8f0fe';stroke='#4a7cf7';sw=1;tc='#2a5cd4';}
-  else if(data.gender==='암컷'){fill='#fce8f3';stroke='#e06faa';sw=1;tc='#c0427e';}
-  else{fill='#f5f5f5';stroke='#aaa';sw=1;tc='#444';}
+  if(isFocus){fill='#16241e';stroke='#8ee9c4';sw=2.5;tc='#8ee9c4';}
+  else if(type==='hatch'){fill='#1b1e22';stroke='rgba(255,255,255,.22)';sw=1;tc='#cfd3d8';}
+  else if(data.gender==='수컷'){fill='#141b24';stroke='#4f6f9e';sw=1;tc='#8fbceb';}
+  else if(data.gender==='암컷'){fill='#221520';stroke='#9c5870';sw=1;tc='#e89bb0';}
+  else{fill='#1b1e22';stroke='rgba(255,255,255,.22)';sw=1;tc='#cfd3d8';}
 
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
   g.style.cursor='pointer';
@@ -382,7 +386,7 @@ function addNode(svg,x,y,data,type,isFocus){
     t.setAttribute('x',cx);t.setAttribute('y',y+dy);
     t.setAttribute('text-anchor','middle');t.setAttribute('font-size',sz);
     t.setAttribute('font-weight',fw);t.setAttribute('fill',tc);
-    t.setAttribute('font-family','-apple-system,sans-serif');t.setAttribute('opacity',op);
+    t.setAttribute('font-family',"'Pretendard',-apple-system,sans-serif");t.setAttribute('opacity',op);
     const max=Math.floor(NW/sz*1.6);
     t.textContent=txt.length>max?txt.slice(0,max-1)+'…':txt;
     g.appendChild(t);
@@ -393,7 +397,7 @@ function addNode(svg,x,y,data,type,isFocus){
 function addLine(svg,x1,y1,x2,y2,dash){
   const l=document.createElementNS('http://www.w3.org/2000/svg','line');
   l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
-  l.setAttribute('stroke','#ccc');l.setAttribute('stroke-width','1.5');
+  l.setAttribute('stroke','rgba(255,255,255,.2)');l.setAttribute('stroke-width','1.5');
   if(dash) l.setAttribute('stroke-dasharray','5,4');
   svg.insertBefore(l,svg.firstChild);
 }
@@ -402,7 +406,7 @@ function addElbow(svg,fromX,fromY,toX,toY){
   const mid=(fromY+toY)/2;
   const p=document.createElementNS('http://www.w3.org/2000/svg','path');
   p.setAttribute('d','M'+fromX+','+fromY+' L'+fromX+','+mid+' L'+toX+','+mid+' L'+toX+','+toY);
-  p.setAttribute('fill','none');p.setAttribute('stroke','#ccc');p.setAttribute('stroke-width','1.5');
+  p.setAttribute('fill','none');p.setAttribute('stroke','rgba(255,255,255,.2)');p.setAttribute('stroke-width','1.5');
   svg.insertBefore(p,svg.firstChild);
 }
 
@@ -466,8 +470,8 @@ function showInfo(data,type){
   const el=document.getElementById('infoPanel');
   if(type==='parent'){
     const kids=allHatchlings.filter(h=>h.father_id===data.id||h.mother_id===data.id);
-    el.innerHTML='<div style="font-size:15px;font-weight:700;color:#000;margin-bottom:3px">'+data.name+'</div>'+
-      '<div style="font-size:12px;color:#888;line-height:1.6">'+
+    el.innerHTML='<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px">'+data.name+'</div>'+
+      '<div style="font-size:12px;color:var(--dim);line-height:1.6">'+
       (data.code?'코드: '+data.code+'<br>':'')+
       (data.morph?'모프: '+data.morph+'<br>':'')+
       (data.gender?'성별: '+data.gender+'<br>':'')+
@@ -479,8 +483,8 @@ function showInfo(data,type){
     const dad=allAnimals.find(a=>a.id===data.father_id);
     const mom=allAnimals.find(a=>a.id===data.mother_id);
     const date=data.hatch_date?new Date(data.hatch_date).toLocaleDateString('ko-KR'):'';
-    el.innerHTML='<div style="font-size:13px;font-weight:700;color:#000;margin-bottom:3px;font-family:monospace">'+data.code+'</div>'+
-      '<div style="font-size:12px;color:#888;line-height:1.6">'+
+    el.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px;font-family:monospace">'+data.code+'</div>'+
+      '<div style="font-size:12px;color:var(--dim);line-height:1.6">'+
       (data.morph?'모프: '+data.morph+'<br>':'')+
       (data.gender?'성별: '+data.gender+'<br>':'')+
       (date?'해칭일: '+date+'<br>':'')+
