@@ -79,6 +79,14 @@ body{background:#0a0b0c}
 .visitor-box .lbl{font-size:12px;color:var(--mute);margin-top:4px}
 .acct-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
 .acct-row p{font-size:13px;font-weight:600;color:var(--ink)}
+.picker{position:relative}
+.picker-list{position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:30;max-height:240px;overflow-y:auto;background:var(--surface);border:1px solid var(--line2);display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.picker-opt{padding:10px 13px;font-size:14px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line)}
+.picker-opt:last-child{border-bottom:none}
+.picker-opt:active,.picker-opt:hover{background:var(--surface2)}
+.picker-opt .po-code{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.picker-opt .po-meta{font-size:11px;color:var(--mute)}
+.picker-empty{padding:12px 13px;font-size:13px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -168,8 +176,20 @@ body{background:#0a0b0c}
       <div class="pane on" id="p-hreg">
         <div id="hsaveOk" class="msg-ok" style="display:none">✓ 등록 완료</div>
         <div id="hsaveErr" class="msg-err" style="display:none"></div>
-        <div class="field"><label>부 (수컷)</label><select id="hFather" onchange="updateHatchCode()"><option value="">선택</option></select></div>
-        <div class="field"><label>모 (암컷) — 해칭 브리더 결정</label><select id="hMother" onchange="onMotherChange()"><option value="">선택</option></select></div>
+        <div class="field"><label>부 (수컷)</label>
+          <div class="picker">
+            <input type="text" id="hFatherSearch" placeholder="이름·코드로 검색" autocomplete="off" oninput="pickerFilter('Father')" onfocus="pickerFilter('Father')">
+            <input type="hidden" id="hFather">
+            <div class="picker-list" id="hFatherList"></div>
+          </div>
+        </div>
+        <div class="field"><label>모 (암컷) — 해칭 브리더 결정</label>
+          <div class="picker">
+            <input type="text" id="hMotherSearch" placeholder="이름·코드로 검색" autocomplete="off" oninput="pickerFilter('Mother')" onfocus="pickerFilter('Mother')">
+            <input type="hidden" id="hMother">
+            <div class="picker-list" id="hMotherList"></div>
+          </div>
+        </div>
         <div class="field"><label>해칭 브리더 (모 기준)</label><div class="code-preview" id="hBreederPrev" style="font-size:13px;letter-spacing:0">—</div></div>
         <div class="field"><label>해칭일</label><input type="date" id="hDate" oninput="updateHatchCode()"></div>
         <div class="field"><label>클러치 번호</label><input type="number" id="hClutch" placeholder="예: 1" min="1" oninput="updateHatchCode()"></div>
@@ -519,13 +539,7 @@ function pickMorph(name,el,type){
 async function loadAnimals(){
   try{
     animals=await api('animals?select=id,name,code,gender,owner_id,owner_label,father_id,mother_id&order=name.asc');
-    const males=animals.filter(a=>a.gender==='수컷');
-    const females=animals.filter(a=>a.gender==='암컷');
     const allOpts='<option value="">선택 안 함</option>'+animals.map(a=>'<option value="'+a.id+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
-    const maleOpts='<option value="">선택</option>'+males.map(a=>'<option value="'+a.id+'" data-code="'+(a.code||'')+'" data-owner="'+(a.owner_id||'')+'" data-label="'+(a.owner_label||'')+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
-    const femaleOpts='<option value="">선택</option>'+females.map(a=>'<option value="'+a.id+'" data-code="'+(a.code||'')+'" data-owner="'+(a.owner_id||'')+'" data-label="'+(a.owner_label||'')+'">'+a.name+(a.code?' ('+a.code+')':'')+' · '+a.owner_label+'</option>').join('');
-    document.getElementById('hFather').innerHTML=maleOpts;
-    document.getElementById('hMother').innerHTML=femaleOpts;
     document.getElementById('aFather').innerHTML=allOpts;
     document.getElementById('aMother').innerHTML=allOpts;
     document.getElementById('editFather').innerHTML=allOpts;
@@ -533,25 +547,45 @@ async function loadAnimals(){
   }catch(e){}
 }
 
+// ── 부모 검색 콤보박스 (성별 미등록 개체도 검색됨)
+const PICK_G={Father:'수컷',Mother:'암컷'};
+function pickerFilter(key){
+  const q=document.getElementById('h'+key+'Search').value.trim().toLowerCase();
+  const list=document.getElementById('h'+key+'List');
+  const g=PICK_G[key];
+  let arr=animals.filter(a=>!q||(a.name+' '+(a.code||'')+' '+(a.owner_label||'')).toLowerCase().includes(q));
+  arr.sort((a,b)=>((b.gender===g)-(a.gender===g))||a.name.localeCompare(b.name));
+  if(!arr.length){list.innerHTML='<div class="picker-empty">결과 없음</div>';list.style.display='block';return;}
+  list.innerHTML=arr.slice(0,40).map(a=>'<div class="picker-opt" onclick="pickerSelect(\''+key+'\',\''+a.id+'\')">'+a.name+(a.code?' <span class="po-code">'+a.code+'</span>':'')+' <span class="po-meta">'+(a.owner_label||'')+' · '+(a.gender||'성별?')+'</span></div>').join('');
+  list.style.display='block';
+}
+function pickerSelect(key,id){
+  const a=animals.find(x=>x.id===id);if(!a)return;
+  document.getElementById('h'+key).value=id;
+  document.getElementById('h'+key+'Search').value=a.name+(a.code?' ('+a.code+')':'');
+  document.getElementById('h'+key+'List').style.display='none';
+  if(key==='Mother')onMotherChange();else updateHatchCode();
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.picker'))document.querySelectorAll('.picker-list').forEach(l=>l.style.display='none');});
+
 function onMotherChange(){
-  const s=document.getElementById('hMother');
-  const o=s.options[s.selectedIndex];
-  document.getElementById('hBreederPrev').textContent=s.value&&o.dataset.label?o.dataset.label:'—';
+  const m=animals.find(a=>a.id===document.getElementById('hMother').value);
+  document.getElementById('hBreederPrev').textContent=m?.owner_label||'—';
   updateHatchCode();
 }
 
 function updateHatchCode(){
-  const fs=document.getElementById('hFather');
-  const ms=document.getElementById('hMother');
+  const fid=document.getElementById('hFather').value;
+  const mid=document.getElementById('hMother').value;
+  const f=animals.find(a=>a.id===fid);
+  const m=animals.find(a=>a.id===mid);
   const dv=document.getElementById('hDate').value;
   const cl=document.getElementById('hClutch').value;
-  const fo=fs.options[fs.selectedIndex];
-  const mo=ms.options[ms.selectedIndex];
-  const bc=BCODES[mo?.dataset?.owner]||'?';
-  const fc=fo?.dataset?.code||'?';
-  const mc=mo?.dataset?.code||'?';
+  const bc=BCODES[m?.owner_id]||'?';
+  const fc=f?.code||'?';
+  const mc=m?.code||'?';
   let code='—';
-  if(fs.value&&ms.value&&dv&&cl){
+  if(fid&&mid&&dv&&cl){
     const d=new Date(dv);
     const yr=String(d.getFullYear()).slice(-1);
     const mm=String(d.getMonth()+1).padStart(2,'0');
@@ -631,7 +665,7 @@ async function saveHatchling(){
       hatch_date:dv,clutch_no:parseInt(cl)
     })});
     ok.style.display='block';
-    ['hFather','hMother','hDate','hClutch','hGender'].forEach(id=>document.getElementById(id).value='');
+    ['hFather','hMother','hFatherSearch','hMotherSearch','hDate','hClutch','hGender'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('hCodePrev').textContent='—';
     document.getElementById('hBreederPrev').textContent='—';
     document.querySelectorAll('#hMorphGrid .morph-chip').forEach(c=>c.classList.remove('selected'));
