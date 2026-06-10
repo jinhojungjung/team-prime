@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0b0c">
+<meta name="robots" content="noindex,nofollow">
+<title>TEAM.PRIME — 매출 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="/style.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
+<style>
+/* 매출 패널 전용 스타일 (다크) — admin.html과 동일 토큰 */
+body{background:#0a0b0c}
+.admin-app{width:100%;max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.admin-header{padding:16px;background:#0a0b0c;border-bottom:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.admin-header .logo{color:var(--ink);font-family:var(--exp);font-size:16px;font-weight:800;letter-spacing:-0.01em}
+.admin-header .sub{color:var(--mute);font-family:var(--mono);font-size:10px;margin-top:3px;letter-spacing:0.06em}
+.badge-admin{font-size:10px;background:var(--ac);color:#0c1410;padding:3px 10px;font-weight:700;letter-spacing:0.06em}
+
+#loginWrap{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px}
+.login-box h2{font-family:var(--dpl);font-size:20px;font-weight:800;margin-bottom:24px;color:var(--ink)}
+#panel{display:none;flex-direction:column;flex:1}
+
+.main-tabs{display:flex;border-bottom:2px solid var(--line2);background:transparent;flex-shrink:0}
+.main-tab{flex:1;padding:12px 4px;font-size:13px;text-align:center;cursor:pointer;background:none;border:none;color:var(--mute);font-family:inherit;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-2px}
+.main-tab.on{color:var(--ac);font-weight:800;border-bottom-color:var(--ac)}
+.section{display:none;flex-direction:column;flex:1;overflow-y:auto}
+.section.on{display:flex}
+.pane{padding:16px}
+.logout-bar{padding:14px 16px;border-top:1px solid var(--line);flex-shrink:0}
+
+/* 개체 선택 그리드 */
+.reg-search{display:flex;gap:8px;margin-bottom:10px}
+.reg-search input{flex:1}
+.pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:300px;overflow-y:auto;padding:2px;margin-bottom:6px}
+.pick-card{border:1px solid var(--line2);background:var(--surface);cursor:pointer;overflow:hidden;text-align:left}
+.pick-card.sel{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.pick-thumb{aspect-ratio:1/1;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden}
+.pick-thumb img{width:100%;height:100%;object-fit:cover}
+.pick-meta{padding:6px 7px}
+.pick-meta .nm{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick-meta .cd{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:1px}
+.pick-meta .ow{font-size:10px;color:var(--mute);margin-top:1px}
+
+/* 선택됨 표시 */
+.sel-box{display:flex;align-items:center;justify-content:space-between;background:var(--ac-dim);border:1px solid var(--ac-line);padding:10px 13px;margin-bottom:14px}
+.sel-box .sb-nm{font-size:14px;font-weight:700;color:var(--ink)}
+.sel-box .sb-meta{font-size:11px;color:var(--dim);margin-top:2px}
+.sel-box button{background:none;border:none;color:var(--ac);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* 할인 체크 */
+.chk-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line2);background:var(--surface);margin-bottom:8px;cursor:pointer}
+.chk-row input{width:18px;height:18px;accent-color:var(--ac);flex-shrink:0}
+.chk-row .ct{font-size:13px;color:var(--ink);font-weight:600}
+.chk-row .cs{font-size:11px;color:var(--mute);margin-top:1px}
+
+/* 계산 미리보기 */
+.calc-box{background:var(--surface2);border:1px solid var(--line);padding:13px;margin-bottom:14px}
+.calc-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--dim)}
+.calc-row b{color:var(--ink);font-family:var(--mono)}
+.calc-row.final{border-top:1px solid var(--line2);margin-top:5px;padding-top:9px;font-size:15px;color:var(--ink);font-weight:700}
+.calc-row.final b{color:var(--ac);font-size:16px}
+.calc-row.fee b{color:var(--m)}
+
+/* 요약 */
+.month-nav{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 0;margin-bottom:6px}
+.month-nav button{background:none;border:1px solid var(--line2);color:var(--ink);width:34px;height:34px;font-size:16px;cursor:pointer}
+.month-nav .mlbl{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ink);min-width:96px;text-align:center}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);padding:13px}
+.kpi .v{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--ink)}
+.kpi .k{font-size:11px;color:var(--mute);margin-top:3px}
+.kpi.ac .v{color:var(--ac)}
+.kpi.fee .v{color:var(--m)}
+.chart-box{background:var(--surface);border:1px solid var(--line);padding:12px;margin-bottom:18px}
+.chart-box h4,.blk-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+
+/* 정산 구간 */
+.period{border:1px solid var(--line2);margin-bottom:14px}
+.period-head{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--surface2);border-bottom:1px solid var(--line)}
+.period-head .pt{font-size:13px;font-weight:800;color:var(--ink)}
+.period-head .pd{font-size:10px;color:var(--mute);font-family:var(--mono);margin-top:2px}
+.period-head .pv{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ac)}
+.badge-done{font-size:10px;background:var(--ac);color:#0c1410;padding:2px 8px;font-weight:700}
+.badge-wait{font-size:10px;background:var(--surface);border:1px solid var(--line2);color:var(--mute);padding:2px 8px}
+.period-body{padding:11px 13px}
+.dist-table{width:100%;font-size:12px;border-collapse:collapse;margin-bottom:10px}
+.dist-table td{padding:6px 4px;border-bottom:1px solid var(--line)}
+.dist-table td:last-child{text-align:right;font-family:var(--mono);font-weight:700;color:var(--ink)}
+.dist-table .fee-td{color:var(--m)}
+.sale-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sale-item:last-child{border-bottom:none}
+.sale-item .si-chk{width:18px;height:18px;accent-color:var(--ac);flex-shrink:0}
+.sale-item .si-main{flex:1;min-width:0}
+.sale-item .si-nm{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sale-item .si-sub{font-size:10px;color:var(--mute);margin-top:2px}
+.sale-item .si-amt{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);text-align:right}
+.sale-item .si-amt .sub{font-size:9px;color:var(--mute);font-weight:400;display:block}
+.si-acts{display:flex;gap:4px;flex-shrink:0}
+.si-acts button{background:none;border:1px solid var(--line2);color:var(--dim);font-size:11px;padding:3px 7px;cursor:pointer;font-family:inherit}
+.si-acts .del{color:var(--f);border-color:rgba(232,155,176,.4)}
+.flag-done{font-size:9px;color:var(--ac);font-weight:700;margin-left:6px}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
+.overlay p{color:var(--ink);font-size:15px}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.25);border-top-color:var(--ac);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--ac);color:#0c1410;padding:11px 20px;font-weight:700;font-size:13px;z-index:1000;display:none}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.sheet-bg.on{opacity:1;pointer-events:all}
+.sheet{background:var(--surface);width:100%;max-width:430px;max-height:90vh;overflow-y:auto;padding:20px 16px 40px;border-top:2px solid var(--line2);transform:translateY(100%);transition:transform 0.25s}
+.sheet-bg.on .sheet{transform:translateY(0)}
+.sheet-handle{width:36px;height:3px;background:var(--line2);margin:0 auto 18px;border-radius:2px}
+.sheet h3{font-family:var(--dpl);font-size:15px;font-weight:800;margin-bottom:16px;color:var(--ink)}
+.add-toggle{width:100%;padding:12px;border:1px dashed var(--line2);background:transparent;color:var(--ac);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="admin-app">
+  <div class="admin-header">
+    <div><div class="logo">🦎 TEAM.PRIME</div><div class="sub">매출 관리 · 내부용</div></div>
+    <div id="headerBadge" style="display:none"><span class="badge-admin" id="headerLabel"></span></div>
+  </div>
+
+  <!-- 로그인 -->
+  <div id="loginWrap">
+    <div class="login-box" style="width:100%">
+      <h2>매출 관리 로그인</h2>
+      <div id="loginErr" class="msg-err" style="display:none"></div>
+      <div class="field">
+        <label>브리더 선택</label>
+        <select id="loginBreeder">
+          <option value="">선택해주세요</option>
+          <option value="mycresoft">마이크레소프트</option>
+          <option value="supremecre">슈프림크레</option>
+          <option value="morphstudio">모프스튜디오</option>
+          <option value="geckox">게코엑스</option>
+          <option value="creming">크레밍</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="loginPw" placeholder="비밀번호" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">로그인</button>
+    </div>
+  </div>
+
+  <!-- 패널 -->
+  <div id="panel">
+    <div class="main-tabs">
+      <button class="main-tab on" id="mt-reg" onclick="switchMain('reg')">📦 매출 등록</button>
+      <button class="main-tab" id="mt-sum" onclick="switchMain('sum')">📊 요약</button>
+    </div>
+
+    <!-- 매출 등록 -->
+    <div class="section on" id="sec-reg">
+      <div class="pane">
+        <div id="rsaveOk" class="msg-ok" style="display:none">✓ 매출이 등록되었습니다</div>
+        <div id="rsaveErr" class="msg-err" style="display:none"></div>
+
+        <div class="reg-search">
+          <input type="text" id="regSearch" placeholder="개체 이름·코드·브리더 검색" autocomplete="off" oninput="renderPickGrid()">
+        </div>
+        <div class="pick-grid" id="pickGrid"></div>
+        <button class="add-toggle" onclick="startTyped('r')">＋ 목록에 없으면 직접 입력</button>
+
+        <!-- 판매 폼 -->
+        <div id="rForm" style="display:none">
+          <div id="rSelBox"></div>
+          <div class="field"><label>판매가 (원)</label><input type="number" id="rPrice" inputmode="numeric" placeholder="예: 1000000" oninput="renderCalc('r')"></div>
+          <div class="field"><label>판매일</label><input type="date" id="rDate"></div>
+
+          <label class="chk-row"><input type="checkbox" id="rDg" onchange="renderCalc('r')"><span><span class="ct">단톡방 할인 −5%</span><span class="cs">단톡방 회원 판매 시</span></span></label>
+          <label class="chk-row"><input type="checkbox" id="rCard" onchange="renderCalc('r')"><span><span class="ct">카드 결제 −3%</span><span class="cs">카드 결제 수수료</span></span></label>
+          <label class="chk-row"><input type="checkbox" id="rMs" checked onchange="renderCalc('r')"><span><span class="ct">모프스튜디오 수수료 30%</span><span class="cs">정산합계의 30% → 모프스튜디오 수익</span></span></label>
+
+          <div class="calc-box" id="rCalc"></div>
+          <button class="btn btn-primary" onclick="saveSale('r')">매출 등록</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 요약 -->
+    <div class="section" id="sec-sum">
+      <div class="pane">
+        <button class="add-toggle" id="qToggle" onclick="toggleQuick()">＋ 매출 등록</button>
+        <div id="qForm" style="display:none">
+          <div id="qsaveErr" class="msg-err" style="display:none"></div>
+          <div class="field"><label>개체 선택</label>
+            <select id="qSelect" onchange="onQSelect()"></select>
+          </div>
+          <div id="qTyped" style="display:none">
+            <div class="field"><label>개체 이름 (직접 입력)</label><input type="text" id="qName" placeholder="이름" autocomplete="off"></div>
+            <div class="field"><label>코드 (선택)</label><input type="text" id="qCode" placeholder="코드" autocomplete="off"></div>
+            <div class="field" id="qOwnerWrap"><label>개체 주인</label><select id="qOwner"></select></div>
+          </div>
+          <div class="field"><label>판매가 (원)</label><input type="number" id="qPrice" inputmode="numeric" placeholder="예: 1000000" oninput="renderCalc('q')"></div>
+          <div class="field"><label>판매일</label><input type="date" id="qDate"></div>
+          <label class="chk-row"><input type="checkbox" id="qDg" onchange="renderCalc('q')"><span><span class="ct">단톡방 할인 −5%</span></span></label>
+          <label class="chk-row"><input type="checkbox" id="qCard" onchange="renderCalc('q')"><span><span class="ct">카드 결제 −3%</span></span></label>
+          <label class="chk-row"><input type="checkbox" id="qMs" checked onchange="renderCalc('q')"><span><span class="ct">모프스튜디오 수수료 30%</span></span></label>
+          <div class="calc-box" id="qCalc"></div>
+          <button class="btn btn-primary" onclick="saveSale('q')">매출 등록</button>
+        </div>
+
+        <div class="month-nav">
+          <button onclick="moveMonth(-1)">‹</button>
+          <span class="mlbl" id="monthLbl">—</span>
+          <button onclick="moveMonth(1)">›</button>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="chart-box">
+          <h4>최근 6개월 정산합계</h4>
+          <canvas id="revChart" height="150"></canvas>
+        </div>
+
+        <div id="periods"></div>
+      </div>
+    </div>
+
+    <div class="logout-bar"><button class="btn btn-ghost" onclick="doLogout()" style="width:100%">로그아웃</button></div>
+  </div>
+</div>
+
+<!-- 수정 시트 -->
+<div class="sheet-bg" id="editBg" onclick="if(event.target===this)closeEdit()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3>매출 수정</h3>
+    <div id="editErr" class="msg-err" style="display:none"></div>
+    <input type="hidden" id="eId">
+    <div class="field"><label>개체 이름</label><input type="text" id="eName"></div>
+    <div class="field"><label>코드</label><input type="text" id="eCode"></div>
+    <div class="field"><label>개체 주인</label><select id="eOwner"></select></div>
+    <div class="field"><label>판매가 (원)</label><input type="number" id="ePrice" inputmode="numeric" oninput="renderCalc('e')"></div>
+    <div class="field"><label>판매일</label><input type="date" id="eDate"></div>
+    <label class="chk-row"><input type="checkbox" id="eDg" onchange="renderCalc('e')"><span><span class="ct">단톡방 할인 −5%</span></span></label>
+    <label class="chk-row"><input type="checkbox" id="eCard" onchange="renderCalc('e')"><span><span class="ct">카드 결제 −3%</span></span></label>
+    <label class="chk-row"><input type="checkbox" id="eMs" onchange="renderCalc('e')"><span><span class="ct">모프스튜디오 수수료 30%</span></span></label>
+    <div class="calc-box" id="eCalc"></div>
+    <button class="btn btn-primary" onclick="saveEdit()" style="margin-bottom:8px">저장</button>
+    <button class="btn btn-ghost" onclick="closeEdit()">취소</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" style="display:none"><div class="spinner"></div><p>처리 중...</p></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 설정 (admin.html과 동일 Supabase 프로젝트) ──────────────
+const SB='https://yoiytrwuojrgvjwsywlt.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaXl0cnd1b2pyZ3Zqd3N5d2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Nzk2OTMsImV4cCI6MjA5NTM1NTY5M30.6Yvi5REKQmsjYBhwcHiwZUwfzFPA1bvVimPjSF1J0hs';
+const BREEDERS={mycresoft:'마이크레소프트',supremecre:'슈프림크레',morphstudio:'모프스튜디오',geckox:'게코엑스',creming:'크레밍'};
+const MASTER='mycresoft';
+const AUTH_EMAIL='wjd7496@gmail.com';
+const MS_RATE=0.30, DG_RATE=0.05, CARD_RATE=0.03;
+const PERIOD_LABELS=['상순 (1~10일)','중순 (11~20일)','하순 (21~말일)'];
+function emailFor(uid){const i=AUTH_EMAIL.indexOf('@');return AUTH_EMAIL.slice(0,i)+'+'+uid+AUTH_EMAIL.slice(i);}
+
+let SESSION=null,isMaster=false,me=null;
+let animals=[],hatchlings=[],items=[],sales=[];
+let selItem=null;            // 매출등록 탭에서 선택된 개체 (null=직접입력 or 미선택)
+let curY,curM;               // 현재 보는 연/월 (1-indexed month)
+let chart=null;
+
+// ── 권한 ──────────────────────────────────────────────
+function isPriv(){return isMaster||me==='morphstudio';}      // 마스터+모프스튜디오: 전체 등록/분배열람/정산
+function canEdit(s){return isMaster||s.registered_by===me||s.owner_id===me;}
+
+// ── 세션 (tp_rev_session) ──────────────────────────────
+function setSession(d){SESSION={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:Date.now()+((d.expires_in||3600)*1000),user:d.user};try{localStorage.setItem('tp_rev_session',JSON.stringify(SESSION));}catch(e){}}
+function clearSession(){SESSION=null;isMaster=false;try{localStorage.removeItem('tp_rev_session');}catch(e){}}
+async function refreshSession(){
+  if(!SESSION||!SESSION.refresh_token){clearSession();return;}
+  try{const r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:SESSION.refresh_token})});if(!r.ok)throw 0;setSession(await r.json());}
+  catch(e){clearSession();}
+}
+async function authToken(){if(!SESSION)return KEY;if(SESSION.expires_at&&Date.now()>SESSION.expires_at-60000){await refreshSession();}return SESSION?SESSION.access_token:KEY;}
+async function api(path,opts={}){
+  const tok=await authToken();
+  const r=await fetch(SB+'/rest/v1/'+path,{headers:{'apikey':KEY,'Authorization':'Bearer '+tok,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})},...opts});
+  if(r.status===401&&SESSION){doLogout();throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');}
+  if(!r.ok)throw new Error(await r.text());
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+
+// ── 이미지 리사이즈 (admin과 동일 규칙) ──
+function rs(url,w){if(!url)return url;if(url.indexOf('/storage/v1/object/public/')>=0)return url.replace('/object/public/','/render/image/public/')+(url.indexOf('?')<0?'?':'&')+'width='+w+'&resize=contain&quality=70';return 'https://images.weserv.nl/?url='+encodeURIComponent(url.replace(/^https?:\/\//,''))+'&w='+w+'&q=70&output=webp';}
+
+// ── 유틸 ──────────────────────────────────────────────
+function pad(n){return String(n).padStart(2,'0');}
+function fmt(n){return (Math.round(n)||0).toLocaleString('ko-KR');}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function showOverlay(b){document.getElementById('overlay').style.display=b?'flex':'none';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2200);}
+function ownerLabel(uid){return BREEDERS[uid]||uid||'';}
+function breederOptions(sel){return Object.entries(BREEDERS).map(([id,l])=>'<option value="'+id+'"'+(id===sel?' selected':'')+'>'+l+'</option>').join('');}
+
+// ── 계산: 할인 먼저 → 정산합계 → 모프 수수료 30% ──
+function calcSale(price,dg,card,ms){
+  let p=+price||0,f=p;
+  if(dg)f*=(1-DG_RATE);
+  if(card)f*=(1-CARD_RATE);
+  f=Math.round(f);
+  const fee=ms?Math.round(f*MS_RATE):0;
+  return {sale_price:p,final:f,disc_amount:p-f,fee:fee,owner_net:f-fee};
+}
+
+// ════════════ 인증 ════════════
+async function doLogin(){
+  const uid=document.getElementById('loginBreeder').value;
+  const pw=document.getElementById('loginPw').value;
+  const err=document.getElementById('loginErr');
+  if(!uid){err.textContent='브리더를 선택해주세요';err.style.display='block';return;}
+  if(!pw){err.textContent='비밀번호를 입력해주세요';err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    const r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify({email:emailFor(uid),password:pw})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error_description||d.msg||'login failed');
+    setSession(d);
+    await afterLogin();
+  }catch(e){err.textContent='비밀번호가 틀리거나 로그인에 실패했습니다';err.style.display='block';document.getElementById('loginPw').value='';}
+}
+async function afterLogin(){
+  let prof;
+  try{prof=await api('profiles?select=breeder_code,label,is_master&id=eq.'+SESSION.user.id);}
+  catch(e){clearSession();throw e;}
+  if(!prof||!prof[0]){alert('이 계정의 프로필이 설정되지 않았습니다. 관리자(마이크레소프트)에게 문의하세요.');clearSession();return;}
+  me=prof[0].breeder_code;isMaster=!!prof[0].is_master;
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('loginPw').value='';
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('panel').style.display='flex';
+  document.getElementById('headerBadge').style.display='block';
+  document.getElementById('headerLabel').textContent=ownerLabel(me);
+  const now=new Date();curY=now.getFullYear();curM=now.getMonth()+1;
+  document.getElementById('rDate').value=todayStr();
+  document.getElementById('qDate').value=todayStr();
+  await loadItems();
+  renderCalc('r');renderCalc('q');
+}
+async function doLogout(){
+  if(SESSION){try{const tok=SESSION.access_token;fetch(SB+'/auth/v1/logout',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+tok}});}catch(e){}}
+  clearSession();me=null;
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('panel').style.display='none';
+  document.getElementById('headerBadge').style.display='none';
+}
+
+// ════════════ 데이터 로드 ════════════
+async function loadItems(){
+  try{
+    const [a,h]=await Promise.all([
+      api('animals?select=id,name,code,owner_id,owner_label,image_url&order=name.asc'),
+      api('hatchlings?select=id,code,morph,owner_id,owner_label,hatch_date&order=hatch_date.desc')
+    ]);
+    animals=a||[];hatchlings=h||[];
+    items=[
+      ...animals.map(x=>({id:x.id,name:x.name,code:x.code||'',owner_id:x.owner_id,owner_label:x.owner_label||ownerLabel(x.owner_id),img:x.image_url,type:'parent'})),
+      ...hatchlings.map(x=>({id:x.id,name:x.code||'해칭',code:x.code||'',owner_id:x.owner_id,owner_label:x.owner_label||ownerLabel(x.owner_id),img:null,type:'hatch'}))
+    ];
+  }catch(e){items=[];}
+  renderPickGrid();
+  buildQSelect();
+}
+// 권한에 따라 등록 가능한 개체만
+function regItems(){return isPriv()?items:items.filter(i=>i.owner_id===me);}
+
+// ════════════ 탭 1: 매출 등록 ════════════
+function renderPickGrid(){
+  const q=document.getElementById('regSearch').value.trim().toLowerCase();
+  const el=document.getElementById('pickGrid');
+  let list=regItems();
+  if(q)list=list.filter(i=>((i.name||'')+' '+(i.code||'')+' '+(i.owner_label||'')).toLowerCase().includes(q));
+  if(!list.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">📦</span>개체가 없습니다 (직접 입력하세요)</div>';return;}
+  el.innerHTML=list.slice(0,60).map(i=>{
+    const sel=selItem&&selItem.id===i.id?' sel':'';
+    const thumb=i.img?'<img src="'+rs(i.img,200)+'" alt="" loading="lazy">':(i.type==='hatch'?'🥚':'🦎');
+    return '<div class="pick-card'+sel+'" onclick="pickItem(\''+i.type+'\',\''+i.id+'\')"><div class="pick-thumb">'+thumb+'</div><div class="pick-meta"><div class="nm">'+i.name+'</div>'+(i.code?'<div class="cd">'+i.code+'</div>':'')+'<div class="ow">'+i.owner_label+'</div></div></div>';
+  }).join('');
+}
+function pickItem(type,id){
+  selItem=items.find(i=>i.type===type&&i.id===id)||null;
+  showRForm();
+  renderPickGrid();
+}
+function startTyped(p){            // 직접 입력 모드 (탭1)
+  selItem={typed:true,id:null,name:'',code:'',owner_id:isPriv()?'':me,owner_label:''};
+  showRForm();
+  renderPickGrid();
+}
+function showRForm(){
+  const box=document.getElementById('rSelBox');
+  if(selItem&&selItem.typed){
+    box.innerHTML='<div class="field"><label>개체 이름 (직접 입력)</label><input type="text" id="rName" placeholder="이름" autocomplete="off"></div>'
+      +'<div class="field"><label>코드 (선택)</label><input type="text" id="rCode" placeholder="코드" autocomplete="off"></div>'
+      +'<div class="field"><label>개체 주인</label><select id="rOwner"'+(isPriv()?'':' disabled')+'>'+breederOptions(selItem.owner_id||me)+'</select></div>';
+  }else if(selItem){
+    box.innerHTML='<div class="sel-box"><div><div class="sb-nm">'+selItem.name+'</div><div class="sb-meta">'+(selItem.code?selItem.code+' · ':'')+selItem.owner_label+'</div></div><button onclick="clearSel()">변경</button></div>';
+  }
+  document.getElementById('rForm').style.display='block';
+  renderCalc('r');
+}
+function clearSel(){selItem=null;document.getElementById('rForm').style.display='none';renderPickGrid();}
+
+// ════════════ 공통 계산 미리보기 ════════════
+function readForm(p){
+  return {
+    price:+document.getElementById(p+'Price').value||0,
+    dg:document.getElementById(p+'Dg').checked,
+    card:document.getElementById(p+'Card').checked,
+    ms:document.getElementById(p+'Ms').checked
+  };
+}
+function renderCalc(p){
+  const f=readForm(p);const c=calcSale(f.price,f.dg,f.card,f.ms);
+  let rows='<div class="calc-row"><span>판매가</span><b>₩'+fmt(c.sale_price)+'</b></div>';
+  const dl=[];if(f.dg)dl.push('단톡 −5%');if(f.card)dl.push('카드 −3%');
+  if(c.disc_amount>0)rows+='<div class="calc-row"><span>할인 ('+dl.join(', ')+')</span><b>−₩'+fmt(c.disc_amount)+'</b></div>';
+  rows+='<div class="calc-row final"><span>정산합계</span><b>₩'+fmt(c.final)+'</b></div>';
+  if(c.fee>0){
+    rows+='<div class="calc-row fee"><span>모프스튜디오 수수료 (30%)</span><b>₩'+fmt(c.fee)+'</b></div>';
+    rows+='<div class="calc-row"><span>개체 주인 몫 (70%)</span><b>₩'+fmt(c.owner_net)+'</b></div>';
+  }
+  document.getElementById(p+'Calc').innerHTML=rows;
+}
+
+// ════════════ 매출 저장 ════════════
+function buildRecord(p,target){     // target: {animal_id,animal_name,animal_code,owner_id}
+  const f=readForm(p);const c=calcSale(f.price,f.dg,f.card,f.ms);
+  return {
+    animal_id:target.animal_id||null,
+    animal_name:target.animal_name||null,
+    animal_code:target.animal_code||null,
+    owner_id:target.owner_id,
+    owner_label:ownerLabel(target.owner_id),
+    sale_price:c.sale_price,
+    disc_group:f.dg,
+    payment_card:f.card,
+    disc_morphstudio:f.ms,
+    disc_amount:c.disc_amount,
+    morphstudio_fee:c.fee,
+    final_price:c.final,
+    sold_at:document.getElementById(p+'Date').value||todayStr(),
+    settled:false,
+    registered_by:me
+  };
+}
+async function saveSale(p){
+  const errId=p==='r'?'rsaveErr':'qsaveErr',okId=p==='r'?'rsaveOk':null;
+  const err=document.getElementById(errId);err.style.display='none';if(okId)document.getElementById(okId).style.display='none';
+  // 타깃 개체 결정
+  let target;
+  if(p==='r'){
+    if(!selItem){err.textContent='개체를 선택하거나 직접 입력하세요';err.style.display='block';return;}
+    if(selItem.typed){
+      const nm=document.getElementById('rName').value.trim();
+      if(!nm){err.textContent='개체 이름을 입력하세요';err.style.display='block';return;}
+      const ow=isPriv()?document.getElementById('rOwner').value:me;
+      target={animal_id:null,animal_name:nm,animal_code:document.getElementById('rCode').value.trim()||null,owner_id:ow};
+    }else{
+      target={animal_id:selItem.id,animal_name:selItem.name,animal_code:selItem.code||null,owner_id:selItem.owner_id};
+    }
+  }else{ // q (요약 탭 빠른등록)
+    const sv=document.getElementById('qSelect').value;
+    if(sv==='__typed'){
+      const nm=document.getElementById('qName').value.trim();
+      if(!nm){err.textContent='개체 이름을 입력하세요';err.style.display='block';return;}
+      const ow=isPriv()?document.getElementById('qOwner').value:me;
+      target={animal_id:null,animal_name:nm,animal_code:document.getElementById('qCode').value.trim()||null,owner_id:ow};
+    }else if(sv){
+      const it=regItems()[+sv];
+      if(!it){err.textContent='개체를 다시 선택하세요';err.style.display='block';return;}
+      target={animal_id:it.id,animal_name:it.name,animal_code:it.code||null,owner_id:it.owner_id};
+    }else{err.textContent='개체를 선택하거나 직접 입력하세요';err.style.display='block';return;}
+  }
+  if(!(+document.getElementById(p+'Price').value>0)){err.textContent='판매가를 입력하세요';err.style.display='block';return;}
+  const rec=buildRecord(p,target);
+  showOverlay(true);
+  try{
+    await api('sales',{method:'POST',body:JSON.stringify(rec)});
+    if(p==='r'){
+      document.getElementById('rsaveOk').style.display='block';
+      document.getElementById('rPrice').value='';
+      clearSel();document.getElementById('regSearch').value='';renderPickGrid();
+      setTimeout(()=>document.getElementById('rsaveOk').style.display='none',2200);
+    }else{
+      toast('✓ 매출 등록 완료');
+      document.getElementById('qForm').style.display='none';
+      document.getElementById('qPrice').value='';document.getElementById('qName').value='';document.getElementById('qCode').value='';
+      await loadSales();
+    }
+  }catch(e){err.textContent='등록 실패: '+e.message;err.style.display='block';}
+  finally{showOverlay(false);}
+}
+
+// ════════════ 요약 탭 빠른 등록 ════════════
+function buildQSelect(){
+  const sel=document.getElementById('qSelect');if(!sel)return;
+  const list=regItems();
+  sel.innerHTML='<option value="">개체 선택</option>'+list.map((i,idx)=>'<option value="'+idx+'">'+i.name+(i.code?' ('+i.code+')':'')+' · '+i.owner_label+'</option>').join('')+'<option value="__typed">+ 직접 입력</option>';
+  document.getElementById('qOwner').innerHTML=breederOptions(me);
+}
+function onQSelect(){
+  const typed=document.getElementById('qSelect').value==='__typed';
+  document.getElementById('qTyped').style.display=typed?'block':'none';
+  document.getElementById('qOwnerWrap').style.display=isPriv()?'block':'none';
+  if(!isPriv())document.getElementById('qOwner').value=me;
+}
+function toggleQuick(){
+  const f=document.getElementById('qForm');
+  const show=f.style.display==='none';
+  f.style.display=show?'block':'none';
+  if(show){buildQSelect();onQSelect();document.getElementById('qDate').value=todayStr();renderCalc('q');}
+}
+
+// ════════════ 요약 / 정산 ════════════
+function moveMonth(d){
+  curM+=d;
+  if(curM>12){curM=1;curY++;}if(curM<1){curM=12;curY--;}
+  loadSales();
+}
+function periodOfDay(day){return day<=10?0:day<=20?1:2;}
+function periodSettleDate(y,m,p){
+  if(p===0)return m+'월 11일';
+  if(p===1)return m+'월 21일';
+  const nm=m===12?1:m+1;return nm+'월 1일';
+}
+async function loadSales(){
+  document.getElementById('monthLbl').textContent=curY+'.'+pad(curM);
+  const from=curY+'-'+pad(curM)+'-01';
+  let ny=curY,nm=curM+1;if(nm>12){nm=1;ny++;}
+  const next=ny+'-'+pad(nm)+'-01';
+  try{
+    let all=await api('sales?select=*&sold_at=gte.'+from+'&sold_at=lt.'+next+'&order=sold_at.asc&order=created_at.asc');
+    all=all||[];
+    sales=isPriv()?all:all.filter(s=>s.owner_id===me||s.registered_by===me);
+  }catch(e){sales=[];}
+  renderKpis();renderPeriods();renderChart();
+}
+function renderKpis(){
+  const tot=sales.reduce((a,s)=>a+(s.sale_price||0),0);
+  const disc=sales.reduce((a,s)=>a+(s.disc_amount||0),0);
+  const fin=sales.reduce((a,s)=>a+(s.final_price||0),0);
+  const fee=sales.reduce((a,s)=>a+(s.morphstudio_fee||0),0);
+  let html='<div class="kpi"><div class="v">₩'+fmt(tot)+'</div><div class="k">총 판매액</div></div>'
+    +'<div class="kpi"><div class="v">₩'+fmt(disc)+'</div><div class="k">총 할인</div></div>'
+    +'<div class="kpi ac"><div class="v">₩'+fmt(fin)+'</div><div class="k">정산합계</div></div>';
+  if(isPriv())html+='<div class="kpi fee"><div class="v">₩'+fmt(fee)+'</div><div class="k">모프 수수료 수익</div></div>';
+  else html+='<div class="kpi"><div class="v">'+sales.length+'</div><div class="k">판매 건수</div></div>';
+  document.getElementById('kpiGrid').innerHTML=html;
+}
+function renderPeriods(){
+  const groups=[[],[],[]];
+  sales.forEach(s=>{const day=+(s.sold_at||'').slice(8,10)||1;groups[periodOfDay(day)].push(s);});
+  let html='';
+  for(let p=0;p<3;p++){
+    const g=groups[p];
+    const fin=g.reduce((a,s)=>a+(s.final_price||0),0);
+    const done=g.length>0&&g.every(s=>s.settled);
+    html+='<div class="period"><div class="period-head"><div><div class="pt">'+PERIOD_LABELS[p]+'</div><div class="pd">정산일 '+periodSettleDate(curY,curM,p)+'</div></div>'
+      +'<div style="text-align:right"><div class="pv">₩'+fmt(fin)+'</div>'+(g.length?(done?'<span class="badge-done">정산완료</span>':'<span class="badge-wait">대기 '+g.filter(s=>!s.settled).length+'</span>'):'')+'</div></div>';
+    if(g.length){
+      html+='<div class="period-body">';
+      if(isPriv())html+=renderDist(g);
+      html+=g.map(renderSaleItem).join('');
+      if(isPriv()&&g.some(s=>!s.settled))html+='<button class="btn btn-primary" style="margin-top:10px" onclick="settlePeriod('+p+')">이 구간 정산완료</button>';
+      html+='</div>';
+    }else{
+      html+='<div class="period-body"><div class="empty" style="padding:14px 0;font-size:12px">판매 없음</div></div>';
+    }
+    html+='</div>';
+  }
+  document.getElementById('periods').innerHTML=html;
+}
+// 브리더별 분배 (priv 전용): 본인 개체 70% + 모프스튜디오는 전체 30% 합산
+function renderDist(g){
+  const map={};
+  g.forEach(s=>{
+    map[s.owner_id]=(map[s.owner_id]||0)+(s.owner_net!=null?s.owner_net:(s.final_price-(s.morphstudio_fee||0)));
+    if(s.morphstudio_fee>0)map['morphstudio']=(map['morphstudio']||0)+s.morphstudio_fee;
+  });
+  const rows=Object.entries(map).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length)return '';
+  let h='<div class="blk-title">브리더별 정산</div><table class="dist-table">';
+  h+=rows.map(([k,v])=>'<tr><td>'+ownerLabel(k)+(k==='morphstudio'?' <span class="fee-td">(수수료 포함)</span>':'')+'</td><td>₩'+fmt(v)+'</td></tr>').join('');
+  h+='</table>';
+  return h;
+}
+function renderSaleItem(s){
+  const owner_net=s.owner_net!=null?s.owner_net:(s.final_price-(s.morphstudio_fee||0));
+  const flags=[];if(s.disc_group)flags.push('단톡');if(s.payment_card)flags.push('카드');if(s.morphstudio_fee>0)flags.push('모프30%');
+  const chk=(isPriv()&&!s.settled)?'<input type="checkbox" class="si-chk" data-id="'+s.id+'">':'<span style="width:18px;flex-shrink:0"></span>';
+  let acts='';
+  if(canEdit(s))acts='<button onclick=\'openEdit("'+s.id+'")\'>수정</button><button class="del" onclick=\'delSale("'+s.id+'")\'>삭제</button>';
+  return '<div class="sale-item">'+chk
+    +'<div class="si-main"><div class="si-nm">'+(s.animal_name||'(이름없음)')+(s.settled?'<span class="flag-done">✓정산</span>':'')+'</div>'
+    +'<div class="si-sub">'+(s.animal_code?s.animal_code+' · ':'')+ownerLabel(s.owner_id)+' · '+(s.sold_at||'')+(flags.length?' · '+flags.join('/'):'')+'</div></div>'
+    +'<div><div class="si-amt">₩'+fmt(s.final_price)+(s.morphstudio_fee>0?'<span class="sub">주인 ₩'+fmt(owner_net)+'</span>':'')+'</div>'
+    +'<div class="si-acts" style="margin-top:4px">'+acts+'</div></div></div>';
+}
+async function settlePeriod(p){
+  const day0=p*10+1;
+  const ids=sales.filter(s=>{const d=+(s.sold_at||'').slice(8,10)||1;return periodOfDay(d)===p&&!s.settled;});
+  // 선택된 체크박스만 있으면 그것만, 없으면 구간 전체
+  const checked=Array.from(document.querySelectorAll('.si-chk:checked')).map(c=>c.dataset.id);
+  let targets=ids;
+  if(checked.length)targets=ids.filter(s=>checked.includes(s.id));
+  if(!targets.length){toast('정산할 건이 없습니다');return;}
+  if(!confirm(targets.length+'건을 정산완료 처리할까요?'))return;
+  showOverlay(true);
+  try{
+    const now=new Date().toISOString();
+    for(const s of targets){
+      await api('sales?id=eq.'+s.id,{method:'PATCH',body:JSON.stringify({settled:true,settled_at:now})});
+    }
+    toast('✓ 정산완료 처리됨');
+    await loadSales();
+  }catch(e){alert('정산 실패: '+e.message);}
+  finally{showOverlay(false);}
+}
+
+// ════════════ 수정 / 삭제 ════════════
+function openEdit(id){
+  const s=sales.find(x=>x.id===id);if(!s)return;if(!canEdit(s)){alert('권한이 없습니다');return;}
+  document.getElementById('eId').value=s.id;
+  document.getElementById('eName').value=s.animal_name||'';
+  document.getElementById('eCode').value=s.animal_code||'';
+  document.getElementById('eOwner').innerHTML=breederOptions(s.owner_id);
+  document.getElementById('eOwner').disabled=!isPriv();
+  document.getElementById('ePrice').value=s.sale_price||0;
+  document.getElementById('eDate').value=s.sold_at||todayStr();
+  document.getElementById('eDg').checked=!!s.disc_group;
+  document.getElementById('eCard').checked=!!s.payment_card;
+  document.getElementById('eMs').checked=!!s.disc_morphstudio;
+  document.getElementById('editErr').style.display='none';
+  renderCalc('e');
+  document.getElementById('editBg').classList.add('on');
+}
+function closeEdit(){document.getElementById('editBg').classList.remove('on');}
+async function saveEdit(){
+  const id=document.getElementById('eId').value;
+  const err=document.getElementById('editErr');err.style.display='none';
+  const nm=document.getElementById('eName').value.trim();
+  if(!nm){err.textContent='개체 이름을 입력하세요';err.style.display='block';return;}
+  const f=readForm('e');const c=calcSale(f.price,f.dg,f.card,f.ms);
+  const ow=document.getElementById('eOwner').value;
+  const rec={animal_name:nm,animal_code:document.getElementById('eCode').value.trim()||null,owner_id:ow,owner_label:ownerLabel(ow),
+    sale_price:c.sale_price,disc_group:f.dg,payment_card:f.card,disc_morphstudio:f.ms,disc_amount:c.disc_amount,morphstudio_fee:c.fee,final_price:c.final,
+    sold_at:document.getElementById('eDate').value||todayStr()};
+  showOverlay(true);
+  try{
+    await api('sales?id=eq.'+id,{method:'PATCH',body:JSON.stringify(rec)});
+    closeEdit();toast('✓ 수정됨');await loadSales();
+  }catch(e){err.textContent='수정 실패: '+e.message;err.style.display='block';}
+  finally{showOverlay(false);}
+}
+async function delSale(id){
+  const s=sales.find(x=>x.id===id);if(!s)return;if(!canEdit(s)){alert('권한이 없습니다');return;}
+  if(!confirm('이 매출을 삭제할까요?'))return;
+  showOverlay(true);
+  try{await api('sales?id=eq.'+id,{method:'DELETE'});toast('삭제됨');await loadSales();}
+  catch(e){alert('삭제 실패: '+e.message);}
+  finally{showOverlay(false);}
+}
+
+// ════════════ 차트 (최근 6개월) ════════════
+async function renderChart(){
+  if(typeof Chart==='undefined')return;
+  const labels=[],keys=[];
+  for(let i=5;i>=0;i--){let m=curM-i,y=curY;while(m<1){m+=12;y--;}labels.push(y+'.'+pad(m));keys.push(y+'-'+pad(m));}
+  const from=keys[0]+'-01';
+  let ny=curY,nm=curM+1;if(nm>12){nm=1;ny++;}const next=ny+'-'+pad(nm)+'-01';
+  let data=[];
+  try{
+    let all=await api('sales?select=sold_at,final_price,owner_id,registered_by&sold_at=gte.'+from+'&sold_at=lt.'+next);
+    all=all||[];if(!isPriv())all=all.filter(s=>s.owner_id===me||s.registered_by===me);
+    const sum={};all.forEach(s=>{const k=(s.sold_at||'').slice(0,7);sum[k]=(sum[k]||0)+(s.final_price||0);});
+    data=keys.map(k=>sum[k]||0);
+  }catch(e){data=keys.map(()=>0);}
+  const ctx=document.getElementById('revChart');if(!ctx)return;
+  if(chart)chart.destroy();
+  chart=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:data,backgroundColor:'#8ee9c4',borderRadius:3}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'₩'+fmt(c.parsed.y)}}},
+      scales:{x:{ticks:{color:'#9aa0a7',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#646a72',font:{size:9},callback:v=>v>=10000?(v/10000)+'만':v},grid:{color:'rgba(255,255,255,.06)'}}}}});
+}
+
+// ════════════ 탭 전환 ════════════
+function switchMain(t){
+  document.getElementById('mt-reg').classList.toggle('on',t==='reg');
+  document.getElementById('mt-sum').classList.toggle('on',t==='sum');
+  document.getElementById('sec-reg').classList.toggle('on',t==='reg');
+  document.getElementById('sec-sum').classList.toggle('on',t==='sum');
+  if(t==='sum')loadSales();
+}
+
+// ════════════ 시작: 세션 복원 ════════════
+(async function init(){
+  try{const raw=localStorage.getItem('tp_rev_session');if(raw)SESSION=JSON.parse(raw);}catch(e){}
+  if(SESSION){
+    await refreshSession();
+    if(SESSION){try{await afterLogin();}catch(e){clearSession();}}
+  }
+})();
+</script>
+</body>
+</html>
